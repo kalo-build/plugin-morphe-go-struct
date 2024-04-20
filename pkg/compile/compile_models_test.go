@@ -24,6 +24,10 @@ func (suite *CompileModelsTestSuite) TearDownTest() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
+	modelsConfig := compile.ModelsConfig{
+		PackageName:  "models",
+		ReceiverName: "m",
+	}
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -70,16 +74,15 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 		},
 		Related: map[string]yaml.ModelRelation{},
 	}
-	const packageName = "models"
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
 
 	goStruct0 := allGoStructs[0]
 
-	suite.Equal(goStruct0.Package, packageName)
+	suite.Equal(goStruct0.Package, modelsConfig.PackageName)
 
 	structImports0 := goStruct0.Imports
 	suite.Len(structImports0, 1)
@@ -148,7 +151,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: "", Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
-	suite.Equal(structMethods00.ReceiverName, "m")
+	suite.Equal(structMethods00.ReceiverName, modelsConfig.ReceiverName)
 	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
 	suite.Equal(structMethods00.Name, "GetIDPrimary")
 	suite.Equal(structMethods00.ReturnTypes, []godef.GoType{
@@ -162,7 +165,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	goStruct1 := allGoStructs[1]
 
-	suite.Equal(goStruct1.Package, packageName)
+	suite.Equal(goStruct1.Package, modelsConfig.PackageName)
 
 	structImports1 := goStruct1.Imports
 	suite.Len(structImports1, 0)
@@ -179,6 +182,10 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
+	modelsConfig := compile.ModelsConfig{
+		PackageName:  "",
+		ReceiverName: "m",
+	}
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -195,9 +202,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 		},
 		Related: map[string]yaml.ModelRelation{},
 	}
-	const packageName = ""
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package name cannot be empty")
@@ -205,7 +211,41 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 	suite.Nil(allGoStructs)
 }
 
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
+	modelsConfig := compile.ModelsConfig{
+		PackageName:  "models",
+		ReceiverName: "",
+	}
+	model0 := yaml.Model{
+		Name: "Basic",
+		Fields: map[string]yaml.ModelField{
+			"AutoIncrement": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"AutoIncrement",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{},
+	}
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "models method receiver name cannot be empty")
+
+	suite.Nil(allGoStructs)
+}
+
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
+	modelsConfig := compile.ModelsConfig{
+		PackageName:  "models",
+		ReceiverName: "m",
+	}
 	model0 := yaml.Model{
 		Name: "",
 		Fields: map[string]yaml.ModelField{
@@ -222,9 +262,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 		},
 		Related: map[string]yaml.ModelRelation{},
 	}
-	const packageName = "models"
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no name")
@@ -233,6 +272,10 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
+	modelsConfig := compile.ModelsConfig{
+		PackageName:  "models",
+		ReceiverName: "m",
+	}
 	model0 := yaml.Model{
 		Name:   "Basic",
 		Fields: map[string]yaml.ModelField{},
@@ -245,9 +288,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 		},
 		Related: map[string]yaml.ModelRelation{},
 	}
-	const packageName = "models"
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no fields")
@@ -256,6 +298,10 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
+	modelsConfig := compile.ModelsConfig{
+		PackageName:  "models",
+		ReceiverName: "m",
+	}
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -266,9 +312,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() 
 		Identifiers: map[string]yaml.ModelIdentifier{},
 		Related:     map[string]yaml.ModelRelation{},
 	}
-	const packageName = "models"
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no identifiers")

@@ -12,10 +12,13 @@ func MorpheToGoStructs(modelsDir string, entitiesDir string) error {
 		return rErr
 	}
 
-	modelsPackageName := "models"
+	modelsConfig := ModelsConfig{
+		PackageName:  "models",
+		ReceiverName: "m",
+	}
 	allModelStructs := map[string][]*godef.Struct{}
 	for modelName, model := range r.Models {
-		modelStructs, modelErr := MorpheModelToGoStructs(modelsPackageName, model)
+		modelStructs, modelErr := MorpheModelToGoStructs(modelsConfig, model)
 		if modelErr != nil {
 			return modelErr
 		}

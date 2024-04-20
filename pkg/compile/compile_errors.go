@@ -7,6 +7,7 @@ import (
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 )
 
+var ErrNoReceiverName = errors.New("method receiver name cannot be empty")
 var ErrNoPackageName = errors.New("package name cannot be empty")
 var ErrNoMorpheModelName = errors.New("morphe model has no name")
 var ErrNoMorpheModelFields = errors.New("morphe model has no fields")

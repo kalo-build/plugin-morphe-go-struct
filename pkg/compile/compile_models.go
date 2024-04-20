@@ -11,9 +11,12 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )
 
-func MorpheModelToGoStructs(packageName string, model yaml.Model) ([]*godef.Struct, error) {
-	if packageName == "" {
+func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+	if config.PackageName == "" {
 		return nil, fmt.Errorf("models %w", ErrNoPackageName)
+	}
+	if config.ReceiverName == "" {
+		return nil, fmt.Errorf("models %w", ErrNoReceiverName)
 	}
 	validateErr := validateMorpheModelDefinition(model)
 	if validateErr != nil {
@@ -21,7 +24,7 @@ func MorpheModelToGoStructs(packageName string, model yaml.Model) ([]*godef.Stru
 	}
 
 	modelStruct := godef.Struct{
-		Package: packageName,
+		Package: config.PackageName,
 		Name:    model.Name,
 	}
 	structFields, fieldsErr := getGoFieldsForMorpheModel(model.Fields)
@@ -50,7 +53,7 @@ func MorpheModelToGoStructs(packageName string, model yaml.Model) ([]*godef.Stru
 			return nil, identFieldDefsErr
 		}
 
-		identStruct, identStructErr := getIdentifierStruct(packageName, modelStruct.Name, identifierName, allIdentFieldDefs)
+		identStruct, identStructErr := getIdentifierStruct(config.PackageName, modelStruct.Name, identifierName, allIdentFieldDefs)
 		if identStructErr != nil {
 			return nil, identStructErr
 		}
@@ -61,18 +64,17 @@ func MorpheModelToGoStructs(packageName string, model yaml.Model) ([]*godef.Stru
 			Name:        identStruct.Name,
 		}
 
-		receiverName := "m"
 		bodyLines := []string{
 			fmt.Sprintf(`	return %s{`, identStruct.Name),
 		}
 		for _, fieldDef := range allIdentFieldDefs {
-			fieldLine := fmt.Sprintf(`		%s: %s.%s,`, fieldDef.Name, receiverName, fieldDef.Name)
+			fieldLine := fmt.Sprintf(`		%s: %s.%s,`, fieldDef.Name, config.ReceiverName, fieldDef.Name)
 			bodyLines = append(bodyLines, fieldLine)
 		}
 		bodyLines = append(bodyLines, `	}`)
 
 		modelIdentGetter := godef.StructMethod{
-			ReceiverName: receiverName,
+			ReceiverName: config.ReceiverName,
 			ReceiverType: identStructType,
 			Name:         fmt.Sprintf("GetID%s", strcase.ToCamelCase(identifierName)),
 			ReturnTypes: []godef.GoType{
