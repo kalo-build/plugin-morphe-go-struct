@@ -4,43 +4,43 @@ import (
 	"strings"
 )
 
-type GoTypeStruct struct {
+type GoTypeInterface struct {
 	// PackagePath is the fully qualified import path, ie. "time", "github.com/<org>/<package>", ...
 	PackagePath string
 
-	// Name is the name of the struct, ie. "Time", ...
+	// Name is the name of the interface, ie. "error", ...
 	Name string
 }
 
-func (t GoTypeStruct) IsPrimitive() bool {
+func (t GoTypeInterface) IsPrimitive() bool {
 	return false
 }
 
-func (t GoTypeStruct) IsMap() bool {
+func (t GoTypeInterface) IsMap() bool {
 	return false
 }
 
-func (t GoTypeStruct) IsArray() bool {
+func (t GoTypeInterface) IsArray() bool {
 	return false
 }
 
-func (t GoTypeStruct) IsStruct() bool {
+func (t GoTypeInterface) IsStruct() bool {
+	return false
+}
+
+func (t GoTypeInterface) IsInterface() bool {
 	return true
 }
 
-func (t GoTypeStruct) IsInterface() bool {
+func (t GoTypeInterface) IsPointer() bool {
 	return false
 }
 
-func (t GoTypeStruct) IsPointer() bool {
-	return false
-}
-
-func (t GoTypeStruct) GetImports() []string {
+func (t GoTypeInterface) GetImports() []string {
 	return []string{t.PackagePath}
 }
 
-func (t GoTypeStruct) GetSyntax() string {
+func (t GoTypeInterface) GetSyntax() string {
 	packageName := t.getPackageName()
 	if packageName == "" {
 		return t.Name
@@ -48,7 +48,7 @@ func (t GoTypeStruct) GetSyntax() string {
 	return packageName + "." + t.Name
 }
 
-func (t GoTypeStruct) getPackageName() string {
+func (t GoTypeInterface) getPackageName() string {
 	if t.PackagePath == "" {
 		return ""
 	}

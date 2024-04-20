@@ -24,6 +24,10 @@ func (t GoTypePointer) IsStruct() bool {
 	return false
 }
 
+func (t GoTypePointer) IsInterface() bool {
+	return false
+}
+
 func (t GoTypePointer) IsPointer() bool {
 	return true
 }

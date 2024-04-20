@@ -26,6 +26,10 @@ func (t GoTypeArray) IsStruct() bool {
 	return false
 }
 
+func (t GoTypeArray) IsInterface() bool {
+	return false
+}
+
 func (t GoTypeArray) IsPointer() bool {
 	return false
 }

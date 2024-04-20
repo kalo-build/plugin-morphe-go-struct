@@ -13,13 +13,13 @@ func MorpheToGoStructs(modelsDir string, entitiesDir string) error {
 	}
 
 	modelsPackageName := "models"
-	allModelStructs := map[string]*godef.Struct{}
+	allModelStructs := map[string][]*godef.Struct{}
 	for modelName, model := range r.Models {
-		modelStruct, modelErr := MorpheModelToGoStruct(modelsPackageName, model)
+		modelStructs, modelErr := MorpheModelToGoStructs(modelsPackageName, model)
 		if modelErr != nil {
 			return modelErr
 		}
-		allModelStructs[modelName] = modelStruct
+		allModelStructs[modelName] = modelStructs
 	}
 
 	entitiesPackageName := "entities"

@@ -26,4 +26,8 @@ var (
 		PackagePath: "time",
 		Name:        "Time",
 	}
+	GoTypeError = GoTypeInterface{
+		PackagePath: "",
+		Name:        "error",
+	}
 )

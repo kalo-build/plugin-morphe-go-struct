@@ -26,6 +26,10 @@ func (t GoTypeMap) IsStruct() bool {
 	return false
 }
 
+func (t GoTypeMap) IsInterface() bool {
+	return false
+}
+
 func (t GoTypeMap) IsPointer() bool {
 	return false
 }

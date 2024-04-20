@@ -20,6 +20,10 @@ func (t GoTypePrimitive) IsStruct() bool {
 	return false
 }
 
+func (t GoTypePrimitive) IsInterface() bool {
+	return false
+}
+
 func (t GoTypePrimitive) IsPointer() bool {
 	return false
 }

@@ -23,7 +23,7 @@ func (suite *CompileModelsTestSuite) SetupTest() {
 func (suite *CompileModelsTestSuite) TearDownTest() {
 }
 
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct() {
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -72,21 +72,24 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct() {
 	}
 	const packageName = "models"
 
-	goStruct, structErr := compile.MorpheModelToGoStruct(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
 
-	suite.Nil(structErr)
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
 
-	suite.Equal(goStruct.Package, packageName)
+	goStruct0 := allGoStructs[0]
 
-	structImports0 := goStruct.Imports
+	suite.Equal(goStruct0.Package, packageName)
+
+	structImports0 := goStruct0.Imports
 	suite.Len(structImports0, 1)
 
 	structImports00 := structImports0[0]
 	suite.Equal(structImports00, "time")
 
-	suite.Equal(goStruct.Name, "Basic")
+	suite.Equal(goStruct0.Name, "Basic")
 
-	structFields0 := goStruct.Fields
+	structFields0 := goStruct0.Fields
 	suite.Len(structFields0, 10)
 
 	structFields00 := structFields0[0]
@@ -139,9 +142,43 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct() {
 	suite.Equal(structFields09.Type, godef.GoTypeString)
 	suite.Len(structFields09.Tags, 1)
 	suite.Equal(structFields09.Tags[0], "immutable")
+
+	structMethods0 := goStruct0.Methods
+	suite.Len(structMethods0, 1)
+
+	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: "", Name: "BasicIDPrimary"}
+	structMethods00 := structMethods0[0]
+	suite.Equal(structMethods00.ReceiverName, "m")
+	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
+	suite.Equal(structMethods00.Name, "GetIDPrimary")
+	suite.Equal(structMethods00.ReturnTypes, []godef.GoType{
+		basicIDPrimaryType,
+	})
+	suite.Equal(structMethods00.BodyLines, []string{
+		"	return BasicIDPrimary{",
+		"		UUID: m.UUID,",
+		"	}",
+	})
+
+	goStruct1 := allGoStructs[1]
+
+	suite.Equal(goStruct1.Package, packageName)
+
+	structImports1 := goStruct1.Imports
+	suite.Len(structImports1, 0)
+
+	suite.Equal(goStruct1.Name, "BasicIDPrimary")
+
+	structFields1 := goStruct1.Fields
+	suite.Len(structFields1, 1)
+
+	structFields10 := structFields1[0]
+	suite.Equal(structFields10.Name, "UUID")
+	suite.Equal(structFields10.Type, godef.GoTypeString)
+	suite.Len(structFields10.Tags, 0)
 }
 
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoPackageName() {
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -160,15 +197,15 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoPackageName() {
 	}
 	const packageName = ""
 
-	goStruct, structErr := compile.MorpheModelToGoStruct(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
 
-	suite.NotNil(structErr)
-	suite.ErrorContains(structErr, "model package name cannot be empty")
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "models package name cannot be empty")
 
-	suite.Nil(goStruct)
+	suite.Nil(allGoStructs)
 }
 
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoModelName() {
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 	model0 := yaml.Model{
 		Name: "",
 		Fields: map[string]yaml.ModelField{
@@ -187,15 +224,15 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoModelName() {
 	}
 	const packageName = "models"
 
-	goStruct, structErr := compile.MorpheModelToGoStruct(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
 
-	suite.NotNil(structErr)
-	suite.ErrorContains(structErr, "morphe model has no name")
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "morphe model has no name")
 
-	suite.Nil(goStruct)
+	suite.Nil(allGoStructs)
 }
 
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoFields() {
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 	model0 := yaml.Model{
 		Name:   "Basic",
 		Fields: map[string]yaml.ModelField{},
@@ -210,15 +247,15 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoFields() {
 	}
 	const packageName = "models"
 
-	goStruct, structErr := compile.MorpheModelToGoStruct(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
 
-	suite.NotNil(structErr)
-	suite.ErrorContains(structErr, "morphe model has no fields")
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "morphe model has no fields")
 
-	suite.Nil(goStruct)
+	suite.Nil(allGoStructs)
 }
 
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoIdentifiers() {
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -231,10 +268,10 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStruct_NoIdentifiers() {
 	}
 	const packageName = "models"
 
-	goStruct, structErr := compile.MorpheModelToGoStruct(packageName, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(packageName, model0)
 
-	suite.NotNil(structErr)
-	suite.ErrorContains(structErr, "morphe model has no identifiers")
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "morphe model has no identifiers")
 
-	suite.Nil(goStruct)
+	suite.Nil(allGoStructs)
 }
