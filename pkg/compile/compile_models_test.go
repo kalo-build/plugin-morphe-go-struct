@@ -25,6 +25,7 @@ func (suite *CompileModelsTestSuite) TearDownTest() {
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "github.com/kaloseia/project/domain/models",
 		PackageName:  "models",
 		ReceiverName: "m",
 	}
@@ -149,7 +150,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
-	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: "", Name: "BasicIDPrimary"}
+	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.PackagePath, Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, modelsConfig.ReceiverName)
 	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
@@ -181,8 +182,40 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	suite.Len(structFields10.Tags, 0)
 }
 
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
+	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "",
+		PackageName:  "models",
+		ReceiverName: "m",
+	}
+	model0 := yaml.Model{
+		Name: "Basic",
+		Fields: map[string]yaml.ModelField{
+			"AutoIncrement": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"AutoIncrement",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{},
+	}
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "models package path cannot be empty")
+
+	suite.Nil(allGoStructs)
+}
+
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
 	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "github.com/kaloseia/project/domain/models",
 		PackageName:  "",
 		ReceiverName: "m",
 	}
@@ -213,6 +246,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
 	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "github.com/kaloseia/project/domain/models",
 		PackageName:  "models",
 		ReceiverName: "",
 	}
@@ -243,6 +277,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "github.com/kaloseia/project/domain/models",
 		PackageName:  "models",
 		ReceiverName: "m",
 	}
@@ -273,6 +308,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "github.com/kaloseia/project/domain/models",
 		PackageName:  "models",
 		ReceiverName: "m",
 	}
@@ -299,6 +335,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
 	modelsConfig := compile.ModelsConfig{
+		PackagePath:  "github.com/kaloseia/project/domain/models",
 		PackageName:  "models",
 		ReceiverName: "m",
 	}

@@ -12,19 +12,77 @@ import (
 )
 
 func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
-	if config.PackageName == "" {
-		return nil, fmt.Errorf("models %w", ErrNoPackageName)
+	validateConfigErr := validateModelsConfig(config)
+	if validateConfigErr != nil {
+		return nil, validateConfigErr
 	}
-	if config.ReceiverName == "" {
-		return nil, fmt.Errorf("models %w", ErrNoReceiverName)
-	}
-	validateErr := validateMorpheModelDefinition(model)
-	if validateErr != nil {
-		return nil, validateErr
+	validateMorpheErr := validateMorpheModelDefinition(model)
+	if validateMorpheErr != nil {
+		return nil, validateMorpheErr
 	}
 
+	modelStruct, modelStructErr := getModelStruct(config.PackageName, model)
+	if modelStructErr != nil {
+		return nil, modelStructErr
+	}
+	allModelStructs := []*godef.Struct{
+		modelStruct,
+	}
+
+	modelIdentifiers := model.Identifiers
+	allIdentifierNames := core.MapKeysSorted(modelIdentifiers)
+	for _, identifierName := range allIdentifierNames {
+		identifierDef := modelIdentifiers[identifierName]
+
+		allIdentFieldDefs, identFieldDefsErr := getIdentifierStructFieldSubset(*modelStruct, identifierName, identifierDef)
+		if identFieldDefsErr != nil {
+			return nil, identFieldDefsErr
+		}
+
+		identStruct, identStructErr := getIdentifierStruct(config.PackageName, modelStruct.Name, identifierName, allIdentFieldDefs)
+		if identStructErr != nil {
+			return nil, identStructErr
+		}
+		allModelStructs = append(allModelStructs, identStruct)
+
+		modelIdentGetter, modelIdentErr := getModelIdentifierGetter(config, identifierName, identStruct)
+		if modelIdentErr != nil {
+			return nil, modelIdentErr
+		}
+		modelStruct.Methods = append(modelStruct.Methods, modelIdentGetter)
+	}
+	return allModelStructs, nil
+}
+
+func validateModelsConfig(config ModelsConfig) error {
+	if config.PackagePath == "" {
+		return fmt.Errorf("models %w", ErrNoPackagePath)
+	}
+	if config.PackageName == "" {
+		return fmt.Errorf("models %w", ErrNoPackageName)
+	}
+	if config.ReceiverName == "" {
+		return fmt.Errorf("models %w", ErrNoReceiverName)
+	}
+	return nil
+}
+
+func validateMorpheModelDefinition(model yaml.Model) error {
+	if model.Name == "" {
+		return ErrNoMorpheModelName
+	}
+	if len(model.Fields) == 0 {
+		return ErrNoMorpheModelFields
+	}
+	if len(model.Identifiers) == 0 {
+		return ErrNoMorpheModelIdentifiers
+	}
+	return nil
+}
+
+func getModelStruct(packageName string, model yaml.Model) (*godef.Struct, error) {
 	modelStruct := godef.Struct{
-		Package: config.PackageName,
+		Package: packageName,
 		Name:    model.Name,
 	}
 	structFields, fieldsErr := getGoFieldsForMorpheModel(model.Fields)
@@ -39,66 +97,7 @@ func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Str
 	}
 	modelStruct.Imports = structImports
 
-	allModelStructs := []*godef.Struct{
-		&modelStruct,
-	}
-
-	modelIdentifiers := model.Identifiers
-	allIdentifierNames := core.MapKeysSorted(modelIdentifiers)
-	for _, identifierName := range allIdentifierNames {
-		identifierDef := modelIdentifiers[identifierName]
-
-		allIdentFieldDefs, identFieldDefsErr := getIdentifierStructFieldSubset(modelStruct, identifierName, identifierDef)
-		if identFieldDefsErr != nil {
-			return nil, identFieldDefsErr
-		}
-
-		identStruct, identStructErr := getIdentifierStruct(config.PackageName, modelStruct.Name, identifierName, allIdentFieldDefs)
-		if identStructErr != nil {
-			return nil, identStructErr
-		}
-		allModelStructs = append(allModelStructs, identStruct)
-
-		identStructType := godef.GoTypeStruct{
-			PackagePath: "",
-			Name:        identStruct.Name,
-		}
-
-		bodyLines := []string{
-			fmt.Sprintf(`	return %s{`, identStruct.Name),
-		}
-		for _, fieldDef := range allIdentFieldDefs {
-			fieldLine := fmt.Sprintf(`		%s: %s.%s,`, fieldDef.Name, config.ReceiverName, fieldDef.Name)
-			bodyLines = append(bodyLines, fieldLine)
-		}
-		bodyLines = append(bodyLines, `	}`)
-
-		modelIdentGetter := godef.StructMethod{
-			ReceiverName: config.ReceiverName,
-			ReceiverType: identStructType,
-			Name:         fmt.Sprintf("GetID%s", strcase.ToCamelCase(identifierName)),
-			ReturnTypes: []godef.GoType{
-				identStructType,
-			},
-			BodyLines: bodyLines,
-		}
-
-		modelStruct.Methods = append(modelStruct.Methods, modelIdentGetter)
-	}
-	return allModelStructs, nil
-}
-
-func validateMorpheModelDefinition(model yaml.Model) error {
-	if model.Name == "" {
-		return ErrNoMorpheModelName
-	}
-	if len(model.Fields) == 0 {
-		return ErrNoMorpheModelFields
-	}
-	if len(model.Identifiers) == 0 {
-		return ErrNoMorpheModelIdentifiers
-	}
-	return nil
+	return &modelStruct, nil
 }
 
 func getGoFieldsForMorpheModel(modelFields map[string]yaml.ModelField) ([]godef.StructField, error) {
@@ -154,6 +153,38 @@ func getIdentifierStruct(packageName string, modelName string, identifierName st
 		Fields:  allIdentFieldDefs,
 	}
 	return &identifierStruct, nil
+}
+
+func getModelIdentifierGetter(config ModelsConfig, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
+	identStructType := godef.GoTypeStruct{
+		PackagePath: config.PackagePath,
+		Name:        identStruct.Name,
+	}
+
+	bodyLines := getModelIdentifierGetterBodyLines(identStruct, config.ReceiverName)
+
+	modelIdentGetter := godef.StructMethod{
+		ReceiverName: config.ReceiverName,
+		ReceiverType: identStructType,
+		Name:         fmt.Sprintf("GetID%s", strcase.ToCamelCase(identifierName)),
+		ReturnTypes: []godef.GoType{
+			identStructType,
+		},
+		BodyLines: bodyLines,
+	}
+	return modelIdentGetter, nil
+}
+
+func getModelIdentifierGetterBodyLines(identStruct *godef.Struct, receiverName string) []string {
+	bodyLines := []string{
+		fmt.Sprintf(`	return %s{`, identStruct.Name),
+	}
+	for _, fieldDef := range identStruct.Fields {
+		fieldLine := fmt.Sprintf(`		%s: %s.%s,`, fieldDef.Name, receiverName, fieldDef.Name)
+		bodyLines = append(bodyLines, fieldLine)
+	}
+	bodyLines = append(bodyLines, `	}`)
+	return bodyLines
 }
 
 func getImportsForStructFields(allFields []godef.StructField) ([]string, error) {
