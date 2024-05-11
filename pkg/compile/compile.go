@@ -3,32 +3,50 @@ package compile
 import (
 	"github.com/kaloseia/morphe-go/pkg/registry"
 
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
-func MorpheToGoStructs(modelsDir string, entitiesDir string) error {
-	r, rErr := loadRegistry(modelsDir, entitiesDir)
+type MorpheCompileConfig struct {
+	MorpheLoadRegistryConfig
+	MorpheModelsConfig
+
+	ModelsWriter   StructWriter
+	EntitiesWriter StructWriter
+}
+
+func MorpheToGoStructs(config MorpheCompileConfig) error {
+	r, rErr := loadRegistry(config.RegistryModelsDirPath, config.RegistryEntitiesDirPath)
 	if rErr != nil {
 		return rErr
 	}
 
-	modelsConfig := ModelsConfig{
-		PackageName:  "models",
-		ReceiverName: "m",
-	}
 	allModelStructs := map[string][]*godef.Struct{}
 	for modelName, model := range r.Models {
-		modelStructs, modelErr := MorpheModelToGoStructs(modelsConfig, model)
+		modelStructs, modelErr := MorpheModelToGoStructs(config.MorpheModelsConfig, model)
 		if modelErr != nil {
 			return modelErr
 		}
 		allModelStructs[modelName] = modelStructs
 	}
+	sortedModelNames := core.MapKeysSorted(allModelStructs)
+	for _, modelName := range sortedModelNames {
+		modelStructs := allModelStructs[modelName]
+		for _, modelStruct := range modelStructs {
+			writeStructErr := config.ModelsWriter.WriteStruct(modelStruct)
+			if writeStructErr != nil {
+				return writeStructErr
+			}
+		}
+	}
 
-	entitiesPackageName := "entities"
+	entitiesPackage := godef.Package{
+		Path: "placeholder",
+		Name: "entities",
+	}
 	allEntityStructs := map[string]*godef.Struct{}
 	for entityName, entity := range r.Entities {
-		entityStruct, entityErr := MorpheEntityToGoStruct(entitiesPackageName, entity)
+		entityStruct, entityErr := MorpheEntityToGoStruct(entitiesPackage, entity)
 		if entityErr != nil {
 			return entityErr
 		}

@@ -32,6 +32,10 @@ func (t GoTypePrimitive) GetImports() []string {
 	return nil
 }
 
+func (t GoTypePrimitive) GetSyntaxLocal() string {
+	return t.Syntax
+}
+
 func (t GoTypePrimitive) GetSyntax() string {
 	return t.Syntax
 }

@@ -39,3 +39,7 @@ func (t GoTypePointer) GetImports() []string {
 func (t GoTypePointer) GetSyntax() string {
 	return fmt.Sprintf("*%s", t.ValueType.GetSyntax())
 }
+
+func (t GoTypePointer) GetSyntaxLocal() string {
+	return fmt.Sprintf("*%s", t.ValueType.GetSyntaxLocal())
+}

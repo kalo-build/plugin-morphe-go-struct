@@ -24,9 +24,11 @@ func (suite *CompileModelsTestSuite) TearDownTest() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "github.com/kaloseia/project/domain/models",
-		PackageName:  "models",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
 		ReceiverName: "m",
 	}
 	model0 := yaml.Model{
@@ -83,7 +85,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	goStruct0 := allGoStructs[0]
 
-	suite.Equal(goStruct0.Package, modelsConfig.PackageName)
+	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
 
 	structImports0 := goStruct0.Imports
 	suite.Len(structImports0, 1)
@@ -150,11 +153,12 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
-	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.PackagePath, Name: "BasicIDPrimary"}
+	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, modelsConfig.ReceiverName)
 	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
 	suite.Equal(structMethods00.Name, "GetIDPrimary")
+	suite.Nil(structMethods00.Parameters)
 	suite.Equal(structMethods00.ReturnTypes, []godef.GoType{
 		basicIDPrimaryType,
 	})
@@ -166,7 +170,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	goStruct1 := allGoStructs[1]
 
-	suite.Equal(goStruct1.Package, modelsConfig.PackageName)
+	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
 
 	structImports1 := goStruct1.Imports
 	suite.Len(structImports1, 0)
@@ -183,9 +188,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "",
-		PackageName:  "models",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "",
+			Name: "models",
+		},
 		ReceiverName: "m",
 	}
 	model0 := yaml.Model{
@@ -214,9 +221,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "github.com/kaloseia/project/domain/models",
-		PackageName:  "",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "",
+		},
 		ReceiverName: "m",
 	}
 	model0 := yaml.Model{
@@ -245,9 +254,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "github.com/kaloseia/project/domain/models",
-		PackageName:  "models",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
 		ReceiverName: "",
 	}
 	model0 := yaml.Model{
@@ -276,9 +287,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "github.com/kaloseia/project/domain/models",
-		PackageName:  "models",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
 		ReceiverName: "m",
 	}
 	model0 := yaml.Model{
@@ -307,9 +320,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "github.com/kaloseia/project/domain/models",
-		PackageName:  "models",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
 		ReceiverName: "m",
 	}
 	model0 := yaml.Model{
@@ -334,9 +349,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
-	modelsConfig := compile.ModelsConfig{
-		PackagePath:  "github.com/kaloseia/project/domain/models",
-		PackageName:  "models",
+	modelsConfig := compile.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
 		ReceiverName: "m",
 	}
 	model0 := yaml.Model{

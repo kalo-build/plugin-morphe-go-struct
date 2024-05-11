@@ -1,7 +1,7 @@
 package godef
 
 type Struct struct {
-	Package string
+	Package Package
 	Imports []string
 	Name    string
 	Fields  []StructField

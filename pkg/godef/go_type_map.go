@@ -59,3 +59,7 @@ func (t GoTypeMap) GetImports() []string {
 func (t GoTypeMap) GetSyntax() string {
 	return fmt.Sprintf("map[%s]%s", t.KeyType.GetSyntax(), t.ValueType.GetSyntax())
 }
+
+func (t GoTypeMap) GetSyntaxLocal() string {
+	return fmt.Sprintf("map[%s]%s", t.KeyType.GetSyntaxLocal(), t.ValueType.GetSyntaxLocal())
+}

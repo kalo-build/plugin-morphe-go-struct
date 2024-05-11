@@ -5,12 +5,11 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
-func MorpheEntityToGoStruct(packageName string, entity yaml.Entity) (*godef.Struct, error) {
+func MorpheEntityToGoStruct(structPackage godef.Package, entity yaml.Entity) (*godef.Struct, error) {
 	morpheStruct := godef.Struct{
-		Package: packageName,
+		Package: structPackage,
 		Name:    entity.Name,
 	}
 
-	// TODO: Imports, Fields, ...
 	return &morpheStruct, nil
 }

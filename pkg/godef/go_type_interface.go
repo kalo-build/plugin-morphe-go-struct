@@ -43,9 +43,13 @@ func (t GoTypeInterface) GetImports() []string {
 func (t GoTypeInterface) GetSyntax() string {
 	packageName := t.getPackageName()
 	if packageName == "" {
-		return t.Name
+		return t.GetSyntaxLocal()
 	}
 	return packageName + "." + t.Name
+}
+
+func (t GoTypeInterface) GetSyntaxLocal() string {
+	return t.Name
 }
 
 func (t GoTypeInterface) getPackageName() string {

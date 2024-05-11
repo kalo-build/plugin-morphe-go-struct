@@ -10,4 +10,5 @@ type GoType interface {
 
 	GetImports() []string
 	GetSyntax() string
+	GetSyntaxLocal() string
 }

@@ -7,12 +7,12 @@ import (
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
-"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )
 
-func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
-	validateConfigErr := validateModelsConfig(config)
+func MorpheModelToGoStructs(config MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+	validateConfigErr := config.Validate()
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
 	}
@@ -21,7 +21,7 @@ func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Str
 		return nil, validateMorpheErr
 	}
 
-	modelStruct, modelStructErr := getModelStruct(config.PackageName, model)
+	modelStruct, modelStructErr := getModelStruct(config.Package, model)
 	if modelStructErr != nil {
 		return nil, modelStructErr
 	}
@@ -39,7 +39,7 @@ func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Str
 			return nil, identFieldDefsErr
 		}
 
-		identStruct, identStructErr := getIdentifierStruct(config.PackageName, modelStruct.Name, identifierName, allIdentFieldDefs)
+		identStruct, identStructErr := getIdentifierStruct(config.Package, modelStruct.Name, identifierName, allIdentFieldDefs)
 		if identStructErr != nil {
 			return nil, identStructErr
 		}
@@ -52,19 +52,6 @@ func MorpheModelToGoStructs(config ModelsConfig, model yaml.Model) ([]*godef.Str
 		modelStruct.Methods = append(modelStruct.Methods, modelIdentGetter)
 	}
 	return allModelStructs, nil
-}
-
-func validateModelsConfig(config ModelsConfig) error {
-	if config.PackagePath == "" {
-		return fmt.Errorf("models %w", ErrNoPackagePath)
-	}
-	if config.PackageName == "" {
-		return fmt.Errorf("models %w", ErrNoPackageName)
-	}
-	if config.ReceiverName == "" {
-		return fmt.Errorf("models %w", ErrNoReceiverName)
-	}
-	return nil
 }
 
 func validateMorpheModelDefinition(model yaml.Model) error {
@@ -80,9 +67,9 @@ func validateMorpheModelDefinition(model yaml.Model) error {
 	return nil
 }
 
-func getModelStruct(packageName string, model yaml.Model) (*godef.Struct, error) {
+func getModelStruct(structPackage godef.Package, model yaml.Model) (*godef.Struct, error) {
 	modelStruct := godef.Struct{
-		Package: packageName,
+		Package: structPackage,
 		Name:    model.Name,
 	}
 	structFields, fieldsErr := getGoFieldsForMorpheModel(model.Fields)
@@ -141,13 +128,13 @@ func getIdentifierStructFieldSubset(modelStruct godef.Struct, identifierName str
 	return identifierFieldDefs, nil
 }
 
-func getIdentifierStruct(packageName string, modelName string, identifierName string, allIdentFieldDefs []godef.StructField) (*godef.Struct, error) {
+func getIdentifierStruct(structPackage godef.Package, modelName string, identifierName string, allIdentFieldDefs []godef.StructField) (*godef.Struct, error) {
 	identifierStructImports, identifierImportsErr := getImportsForStructFields(allIdentFieldDefs)
 	if identifierImportsErr != nil {
 		return nil, identifierImportsErr
 	}
 	identifierStruct := godef.Struct{
-		Package: packageName,
+		Package: structPackage,
 		Imports: identifierStructImports,
 		Name:    fmt.Sprintf("%sID%s", modelName, strcase.ToCamelCase(identifierName)),
 		Fields:  allIdentFieldDefs,
@@ -155,9 +142,9 @@ func getIdentifierStruct(packageName string, modelName string, identifierName st
 	return &identifierStruct, nil
 }
 
-func getModelIdentifierGetter(config ModelsConfig, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
+func getModelIdentifierGetter(config MorpheModelsConfig, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
 	identStructType := godef.GoTypeStruct{
-		PackagePath: config.PackagePath,
+		PackagePath: config.Package.Path,
 		Name:        identStruct.Name,
 	}
 

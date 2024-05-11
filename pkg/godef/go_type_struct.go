@@ -43,9 +43,13 @@ func (t GoTypeStruct) GetImports() []string {
 func (t GoTypeStruct) GetSyntax() string {
 	packageName := t.getPackageName()
 	if packageName == "" {
-		return t.Name
+		return t.GetSyntaxLocal()
 	}
 	return packageName + "." + t.Name
+}
+
+func (t GoTypeStruct) GetSyntaxLocal() string {
+	return t.Name
 }
 
 func (t GoTypeStruct) getPackageName() string {

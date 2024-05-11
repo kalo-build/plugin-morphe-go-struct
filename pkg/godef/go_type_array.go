@@ -44,3 +44,10 @@ func (t GoTypeArray) GetSyntax() string {
 	}
 	return fmt.Sprintf("[%v]%s", t.FixedSize, t.ValueType.GetSyntax())
 }
+
+func (t GoTypeArray) GetSyntaxLocal() string {
+	if t.IsSlice {
+		return fmt.Sprintf("[]%s", t.ValueType.GetSyntaxLocal())
+	}
+	return fmt.Sprintf("[%v]%s", t.FixedSize, t.ValueType.GetSyntaxLocal())
+}
