@@ -1,4 +1,4 @@
-package event
+package eventdef
 
 type EventHandlerRegistry struct {
 	allHandlers  map[string]EventHandler

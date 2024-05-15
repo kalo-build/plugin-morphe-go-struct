@@ -1,4 +1,4 @@
-package event
+package eventdef
 
 type EventBusable interface {
 	Subscribe(eventType string, handler EventHandler) error

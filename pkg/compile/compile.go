@@ -4,7 +4,7 @@ import (
 	"github.com/kaloseia/morphe-go/pkg/registry"
 
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/event"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/eventdef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
@@ -14,7 +14,7 @@ type MorpheCompileConfig struct {
 
 	ModelsWriter   StructWriter
 	EntitiesWriter StructWriter
-	EventBus       event.EventBusable
+	EventBus       eventdef.EventBusable
 }
 
 func MorpheToGoStructs(config MorpheCompileConfig) error {

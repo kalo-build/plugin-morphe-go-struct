@@ -1,4 +1,4 @@
-package event
+package eventdef
 
 type Event interface {
 	GetName() string
