@@ -12,7 +12,7 @@ func MorpheToGoStructs(config MorpheCompileConfig) error {
 	}
 
 	allModelStructs := map[string][]*godef.Struct{}
-	for modelName, model := range r.Models {
+	for modelName, model := range r.GetAllModels() {
 		modelStructs, modelErr := MorpheModelToGoStructs(config.MorpheModelsConfig, model)
 		if modelErr != nil {
 			return modelErr
@@ -35,7 +35,7 @@ func MorpheToGoStructs(config MorpheCompileConfig) error {
 		Name: "entities",
 	}
 	allEntityStructs := map[string]*godef.Struct{}
-	for entityName, entity := range r.Entities {
+	for entityName, entity := range r.GetAllEntities() {
 		entityStruct, entityErr := MorpheEntityToGoStruct(entitiesPackage, entity)
 		if entityErr != nil {
 			return entityErr

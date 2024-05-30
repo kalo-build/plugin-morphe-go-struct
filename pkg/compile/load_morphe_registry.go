@@ -19,7 +19,7 @@ func loadMorpheRegistry(hooks hook.LoadMorpheRegistry, config cfg.MorpheLoadRegi
 		return nil, triggerLoadRegistryFailure(hooks, config, r, loadErr)
 	}
 
-	loadSuccessErr := triggerLoadRegistrySuccess(hooks, r)
+	r, loadSuccessErr := triggerLoadRegistrySuccess(hooks, r)
 	if loadSuccessErr != nil {
 		return nil, triggerLoadRegistryFailure(hooks, config, r, loadSuccessErr)
 	}
@@ -54,19 +54,19 @@ func triggerLoadRegistryStart(hooks hook.LoadMorpheRegistry, config cfg.MorpheLo
 	return updatedConfig, nil
 }
 
-func triggerLoadRegistrySuccess(hooks hook.LoadMorpheRegistry, r *registry.Registry) error {
+func triggerLoadRegistrySuccess(hooks hook.LoadMorpheRegistry, r *registry.Registry) (*registry.Registry, error) {
 	if hooks.OnRegistryLoadSuccess == nil {
-		return nil
+		return r, nil
 	}
 	if r == nil {
-		return ErrRegistryNotInitialized
+		return nil, ErrRegistryNotInitialized
 	}
-	registry, successErr := hooks.OnRegistryLoadSuccess(*r)
+	registry, successErr := hooks.OnRegistryLoadSuccess(*r.DeepClone())
 	if successErr != nil {
-		return successErr
+		return nil, successErr
 	}
-	*r = registry
-	return nil
+	r = &registry
+	return r, nil
 }
 
 func triggerLoadRegistryFailure(hooks hook.LoadMorpheRegistry, config cfg.MorpheLoadRegistryConfig, r *registry.Registry, failureErr error) error {
@@ -78,5 +78,5 @@ func triggerLoadRegistryFailure(hooks hook.LoadMorpheRegistry, config cfg.Morphe
 		return hooks.OnRegistryLoadFailure(config, registry.Registry{}, failureErr)
 	}
 
-	return hooks.OnRegistryLoadFailure(config, *r, failureErr)
+	return hooks.OnRegistryLoadFailure(config, *r.DeepClone(), failureErr)
 }
