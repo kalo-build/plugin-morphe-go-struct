@@ -5,6 +5,7 @@ import (
 
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 	"github.com/stretchr/testify/suite"
 )
@@ -24,7 +25,7 @@ func (suite *CompileModelsTestSuite) TearDownTest() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
@@ -188,7 +189,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "",
 			Name: "models",
@@ -221,7 +222,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "",
@@ -254,7 +255,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
@@ -287,7 +288,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
@@ -320,7 +321,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
@@ -349,7 +350,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
-	modelsConfig := compile.MorpheModelsConfig{
+	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",

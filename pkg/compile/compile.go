@@ -1,24 +1,12 @@
 package compile
 
 import (
-	"github.com/kaloseia/morphe-go/pkg/registry"
-
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/eventdef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
-type MorpheCompileConfig struct {
-	MorpheLoadRegistryConfig
-	MorpheModelsConfig
-
-	ModelsWriter   StructWriter
-	EntitiesWriter StructWriter
-	EventBus       eventdef.EventBusable
-}
-
 func MorpheToGoStructs(config MorpheCompileConfig) error {
-	r, rErr := loadRegistry(config.RegistryModelsDirPath, config.RegistryEntitiesDirPath)
+	r, rErr := loadMorpheRegistry(config.RegistryHooks, config.MorpheLoadRegistryConfig)
 	if rErr != nil {
 		return rErr
 	}
@@ -35,7 +23,7 @@ func MorpheToGoStructs(config MorpheCompileConfig) error {
 	for _, modelName := range sortedModelNames {
 		modelStructs := allModelStructs[modelName]
 		for _, modelStruct := range modelStructs {
-			writeStructErr := config.ModelsWriter.WriteStruct(modelStruct)
+			writeStructErr := config.ModelWriter.WriteStruct(modelStruct)
 			if writeStructErr != nil {
 				return writeStructErr
 			}
@@ -56,19 +44,4 @@ func MorpheToGoStructs(config MorpheCompileConfig) error {
 	}
 
 	return nil
-}
-
-func loadRegistry(modelsDir string, entitiesDir string) (*registry.Registry, error) {
-	r := registry.NewRegistry()
-
-	modelsErr := r.LoadModelsFromDirectory(modelsDir)
-	if modelsErr != nil {
-		return nil, modelsErr
-	}
-	entitiesErr := r.LoadEntitiesFromDirectory(entitiesDir)
-	if entitiesErr != nil {
-		return nil, entitiesErr
-	}
-
-	return r, nil
 }

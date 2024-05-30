@@ -9,6 +9,7 @@ import (
 
 	"github.com/kaloseia/plugin-morphe-go-struct/internal/testutils"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
@@ -44,12 +45,12 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 	defer os.RemoveAll(workingDirPath)
 
 	config := compile.MorpheCompileConfig{
-		MorpheLoadRegistryConfig: compile.MorpheLoadRegistryConfig{
+		MorpheLoadRegistryConfig: cfg.MorpheLoadRegistryConfig{
 			RegistryModelsDirPath:   suite.ModelsDirPath,
 			RegistryEntitiesDirPath: suite.EntitiesDirPath,
 		},
 
-		MorpheModelsConfig: compile.MorpheModelsConfig{
+		MorpheModelsConfig: cfg.MorpheModelsConfig{
 			Package: godef.Package{
 				Path: "github.com/kaloseia/dummy/models",
 				Name: "models",
@@ -57,7 +58,7 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 			ReceiverName: "m",
 		},
 
-		ModelsWriter: &compile.MorpheStructWriter{
+		ModelWriter: &compile.MorpheStructWriter{
 			Type:          compile.MorpheStructTypeModels,
 			TargetDirPath: workingDirPath + "/models",
 		},

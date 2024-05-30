@@ -1,4 +1,4 @@
-package compile
+package cfg
 
 type MorpheLoadRegistryConfig struct {
 	RegistryModelsDirPath   string

@@ -5,13 +5,14 @@ import (
 	"sort"
 
 	"github.com/kaloseia/morphe-go/pkg/yaml"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )
 
-func MorpheModelToGoStructs(config MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+func MorpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
 	validateConfigErr := config.Validate()
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
@@ -142,7 +143,7 @@ func getIdentifierStruct(structPackage godef.Package, modelName string, identifi
 	return &identifierStruct, nil
 }
 
-func getModelIdentifierGetter(config MorpheModelsConfig, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
+func getModelIdentifierGetter(config cfg.MorpheModelsConfig, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
 	identStructType := godef.GoTypeStruct{
 		PackagePath: config.Package.Path,
 		Name:        identStruct.Name,
