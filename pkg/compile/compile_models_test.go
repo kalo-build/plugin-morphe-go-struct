@@ -6,6 +6,7 @@ import (
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 	"github.com/stretchr/testify/suite"
 )
@@ -25,6 +26,8 @@ func (suite *CompileModelsTestSuite) TearDownTest() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -32,6 +35,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 		},
 		ReceiverName: "m",
 	}
+
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -79,7 +83,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -189,6 +193,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "",
@@ -196,6 +202,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 		},
 		ReceiverName: "m",
 	}
+
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -213,7 +220,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package path cannot be empty")
@@ -222,6 +229,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -229,6 +238,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 		},
 		ReceiverName: "m",
 	}
+
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -246,7 +256,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package name cannot be empty")
@@ -255,6 +265,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -262,6 +274,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 		},
 		ReceiverName: "",
 	}
+
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -279,7 +292,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models method receiver name cannot be empty")
@@ -288,6 +301,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -295,6 +310,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 		},
 		ReceiverName: "m",
 	}
+
 	model0 := yaml.Model{
 		Name: "",
 		Fields: map[string]yaml.ModelField{
@@ -312,7 +328,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no name")
@@ -321,6 +337,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -328,6 +346,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 		},
 		ReceiverName: "m",
 	}
+
 	model0 := yaml.Model{
 		Name:   "Basic",
 		Fields: map[string]yaml.ModelField{},
@@ -341,7 +360,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no fields")
@@ -350,6 +369,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
+	modelHooks := hook.CompileMorpheModel{}
+
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -357,6 +378,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() 
 		},
 		ReceiverName: "m",
 	}
+
 	model0 := yaml.Model{
 		Name: "Basic",
 		Fields: map[string]yaml.ModelField{
@@ -368,7 +390,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() 
 		Related:     map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelsConfig, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no identifiers")

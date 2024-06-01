@@ -39,3 +39,9 @@ func (t GoTypePrimitive) GetSyntaxLocal() string {
 func (t GoTypePrimitive) GetSyntax() string {
 	return t.Syntax
 }
+
+func (t GoTypePrimitive) DeepClone() GoTypePrimitive {
+	return GoTypePrimitive{
+		Syntax: t.Syntax,
+	}
+}

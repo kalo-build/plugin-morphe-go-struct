@@ -59,3 +59,10 @@ func (t GoTypeInterface) getPackageName() string {
 	packagePieces := strings.Split(t.PackagePath, "/")
 	return packagePieces[len(packagePieces)-1]
 }
+
+func (t GoTypeInterface) DeepClone() GoTypeInterface {
+	return GoTypeInterface{
+		PackagePath: t.PackagePath,
+		Name:        t.Name,
+	}
+}

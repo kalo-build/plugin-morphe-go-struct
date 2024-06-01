@@ -6,14 +6,14 @@ import (
 )
 
 func MorpheToGoStructs(config MorpheCompileConfig) error {
-	r, rErr := loadMorpheRegistry(config.RegistryHooks, config.MorpheLoadRegistryConfig)
+	r, rErr := LoadMorpheRegistry(config.RegistryHooks, config.MorpheLoadRegistryConfig)
 	if rErr != nil {
 		return rErr
 	}
 
 	allModelStructs := map[string][]*godef.Struct{}
 	for modelName, model := range r.GetAllModels() {
-		modelStructs, modelErr := MorpheModelToGoStructs(config.MorpheModelsConfig, model)
+		modelStructs, modelErr := MorpheModelToGoStructs(config.ModelHooks, config.MorpheModelsConfig, model)
 		if modelErr != nil {
 			return modelErr
 		}
