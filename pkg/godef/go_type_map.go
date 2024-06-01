@@ -63,3 +63,10 @@ func (t GoTypeMap) GetSyntax() string {
 func (t GoTypeMap) GetSyntaxLocal() string {
 	return fmt.Sprintf("map[%s]%s", t.KeyType.GetSyntaxLocal(), t.ValueType.GetSyntaxLocal())
 }
+
+func (t GoTypeMap) DeepClone() GoTypeMap {
+	return GoTypeMap{
+		KeyType:   DeepCloneGoType(t.KeyType),
+		ValueType: DeepCloneGoType(t.ValueType),
+	}
+}

@@ -6,7 +6,7 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
 )
 
-func loadMorpheRegistry(hooks hook.LoadMorpheRegistry, config cfg.MorpheLoadRegistryConfig) (*registry.Registry, error) {
+func LoadMorpheRegistry(hooks hook.LoadMorpheRegistry, config cfg.MorpheLoadRegistryConfig) (*registry.Registry, error) {
 	config, loadStartErr := triggerLoadRegistryStart(hooks, config)
 	if loadStartErr != nil {
 		return nil, triggerLoadRegistryFailure(hooks, config, nil, loadStartErr)

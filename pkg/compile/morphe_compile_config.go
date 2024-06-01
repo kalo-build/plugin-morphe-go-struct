@@ -12,8 +12,8 @@ type MorpheCompileConfig struct {
 	RegistryHooks hook.LoadMorpheRegistry
 
 	ModelWriter StructWriter
-	ModelHooks  hook.CompileMorpheModels
+	ModelHooks  hook.CompileMorpheModel
 
 	EntityWriter StructWriter
-	EntityHooks  hook.CompileMorpheEntities
+	EntityHooks  hook.CompileMorpheEntity
 }

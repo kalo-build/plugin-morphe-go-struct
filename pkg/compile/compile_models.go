@@ -4,15 +4,34 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/kaloseia/clone"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )
 
-func MorpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+func MorpheModelToGoStructs(modelHooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+	config, model, compileStartErr := triggerCompileMorpheModelStart(modelHooks, config, model)
+	if compileStartErr != nil {
+		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, compileStartErr)
+	}
+	allModelStructs, structsErr := morpheModelToGoStructs(config, model)
+	if structsErr != nil {
+		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, structsErr)
+	}
+
+	allModelStructs, compileSuccessErr := triggerCompileMorpheModelSuccess(modelHooks, allModelStructs)
+	if compileSuccessErr != nil {
+		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, compileSuccessErr)
+	}
+	return allModelStructs, nil
+}
+
+func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
 	validateConfigErr := config.Validate()
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
@@ -191,4 +210,41 @@ func getImportsForStructFields(allFields []godef.StructField) ([]string, error) 
 	sort.Strings(allStructImports)
 
 	return allStructImports, nil
+}
+
+func triggerCompileMorpheModelStart(hooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model) (cfg.MorpheModelsConfig, yaml.Model, error) {
+	if hooks.OnCompileMorpheModelStart == nil {
+		return config, model, nil
+	}
+
+	updatedConfig, updatedModel, startErr := hooks.OnCompileMorpheModelStart(config, model)
+	if startErr != nil {
+		return cfg.MorpheModelsConfig{}, yaml.Model{}, startErr
+	}
+
+	return updatedConfig, updatedModel, nil
+}
+
+func triggerCompileMorpheModelSuccess(hooks hook.CompileMorpheModel, allModelStructs []*godef.Struct) ([]*godef.Struct, error) {
+	if hooks.OnCompileMorpheModelSuccess == nil {
+		return allModelStructs, nil
+	}
+	if allModelStructs == nil {
+		return nil, ErrRegistryNotInitialized
+	}
+	allModelStructsClone := clone.DeepCloneSlicePointers(allModelStructs)
+
+	allModelStructs, successErr := hooks.OnCompileMorpheModelSuccess(allModelStructsClone)
+	if successErr != nil {
+		return nil, successErr
+	}
+	return allModelStructs, nil
+}
+
+func triggerCompileMorpheModelFailure(hooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model, failureErr error) error {
+	if hooks.OnCompileMorpheModelFailure == nil {
+		return failureErr
+	}
+
+	return hooks.OnCompileMorpheModelFailure(config, model.DeepClone(), failureErr)
 }

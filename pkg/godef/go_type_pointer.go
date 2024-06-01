@@ -43,3 +43,9 @@ func (t GoTypePointer) GetSyntax() string {
 func (t GoTypePointer) GetSyntaxLocal() string {
 	return fmt.Sprintf("*%s", t.ValueType.GetSyntaxLocal())
 }
+
+func (t GoTypePointer) DeepClone() GoTypePointer {
+	return GoTypePointer{
+		ValueType: DeepCloneGoType(t.ValueType),
+	}
+}

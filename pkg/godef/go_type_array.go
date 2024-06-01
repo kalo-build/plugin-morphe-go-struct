@@ -51,3 +51,11 @@ func (t GoTypeArray) GetSyntaxLocal() string {
 	}
 	return fmt.Sprintf("[%v]%s", t.FixedSize, t.ValueType.GetSyntaxLocal())
 }
+
+func (t GoTypeArray) DeepClone() GoTypeArray {
+	return GoTypeArray{
+		IsSlice:   t.IsSlice,
+		FixedSize: t.FixedSize,
+		ValueType: DeepCloneGoType(t.ValueType),
+	}
+}
