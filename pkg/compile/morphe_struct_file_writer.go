@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kaloseia/go-util/core"
 	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/gofile"
 )
 

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
+	"github.com/kaloseia/go-util/strcase"
 )
 
 func WriteGoStructFile(dirPath string, structName string, structFileContents string) ([]byte, error) {
