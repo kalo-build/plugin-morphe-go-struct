@@ -2,10 +2,10 @@ package compile
 
 import (
 	"github.com/kaloseia/clone"
+	"github.com/kaloseia/go-util/core"
 	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/write"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
 )
 
 func WriteAllModelStructDefinitions(config MorpheCompileConfig, allModelStructDefs map[string][]*godef.Struct) (CompiledModelStructs, error) {

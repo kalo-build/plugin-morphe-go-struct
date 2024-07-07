@@ -5,13 +5,13 @@ import (
 	"sort"
 
 	"github.com/kaloseia/clone"
+	"github.com/kaloseia/go-util/core"
+	"github.com/kaloseia/go-util/strcase"
 	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/morphe-go/pkg/registry"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )
 
@@ -169,7 +169,7 @@ func getIdentifierStruct(structPackage godef.Package, modelName string, identifi
 	identifierStruct := godef.Struct{
 		Package: structPackage,
 		Imports: identifierStructImports,
-		Name:    fmt.Sprintf("%sID%s", modelName, strcase.ToCamelCase(identifierName)),
+		Name:    fmt.Sprintf("%sID%s", modelName, strcase.ToPascalCase(identifierName)),
 		Fields:  allIdentFieldDefs,
 	}
 	return &identifierStruct, nil
@@ -189,7 +189,7 @@ func getModelIdentifierGetter(config cfg.MorpheModelsConfig, modelName string, i
 			PackagePath: config.Package.Path,
 			Name:        modelName,
 		},
-		Name: fmt.Sprintf("GetID%s", strcase.ToCamelCase(identifierName)),
+		Name: fmt.Sprintf("GetID%s", strcase.ToPascalCase(identifierName)),
 		ReturnTypes: []godef.GoType{
 			identStructType,
 		},
