@@ -3,7 +3,7 @@ package cfg
 import (
 	"fmt"
 
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
+	"github.com/kaloseia/go/pkg/godef"
 )
 
 type MorpheModelsConfig struct {

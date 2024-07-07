@@ -13,5 +13,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/kaloseia/go v0.0.0-20240707130817-3f244803c2c8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

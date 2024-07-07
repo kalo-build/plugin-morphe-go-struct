@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 	"github.com/stretchr/testify/suite"
 )
 
