@@ -49,7 +49,7 @@ func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
 	}
-	validateMorpheErr := validateMorpheModelDefinition(model)
+	validateMorpheErr := model.Validate()
 	if validateMorpheErr != nil {
 		return nil, validateMorpheErr
 	}
@@ -85,19 +85,6 @@ func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]
 		modelStruct.Methods = append(modelStruct.Methods, modelIdentGetter)
 	}
 	return allModelStructs, nil
-}
-
-func validateMorpheModelDefinition(model yaml.Model) error {
-	if model.Name == "" {
-		return ErrNoMorpheModelName
-	}
-	if len(model.Fields) == 0 {
-		return ErrNoMorpheModelFields
-	}
-	if len(model.Identifiers) == 0 {
-		return ErrNoMorpheModelIdentifiers
-	}
-	return nil
 }
 
 func getModelStruct(structPackage godef.Package, model yaml.Model) (*godef.Struct, error) {
