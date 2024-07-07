@@ -5,12 +5,12 @@ import (
 	"sort"
 
 	"github.com/kaloseia/clone"
+	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/morphe-go/pkg/registry"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/core"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )

@@ -7,10 +7,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/plugin-morphe-go-struct/internal/testutils"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
 type CompileTestSuite struct {

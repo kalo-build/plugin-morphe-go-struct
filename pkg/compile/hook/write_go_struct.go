@@ -1,8 +1,8 @@
 package hook
 
 import (
+	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/write"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
 type WriteGoStruct struct {
