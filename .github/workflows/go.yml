@@ -13,6 +13,8 @@ jobs:
     container: alpine:latest
     steps:
     - uses: actions/checkout@v2
+    - name: Install Git
+      run: apk add --no-cache git
     - name: Configure git for private modules
       env:
         TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
