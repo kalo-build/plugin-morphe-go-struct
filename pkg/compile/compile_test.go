@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/kaloseia/go/pkg/godef"
+	rcfg "github.com/kaloseia/morphe-go/pkg/registry/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/internal/testutils"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
@@ -45,7 +46,7 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 	defer os.RemoveAll(workingDirPath)
 
 	config := compile.MorpheCompileConfig{
-		MorpheLoadRegistryConfig: cfg.MorpheLoadRegistryConfig{
+		MorpheLoadRegistryConfig: rcfg.MorpheLoadRegistryConfig{
 			RegistryModelsDirPath:   suite.ModelsDirPath,
 			RegistryEntitiesDirPath: suite.EntitiesDirPath,
 		},

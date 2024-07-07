@@ -6,7 +6,7 @@ require (
 	github.com/gobeam/stringy v0.0.6
 	github.com/kaloseia/clone v0.0.0-20240601081950-41de0e12ccb4
 	github.com/kaloseia/go v0.0.0-20240707130817-3f244803c2c8
-	github.com/kaloseia/morphe-go v0.0.0-20240601082858-53e701fd83bc
+	github.com/kaloseia/morphe-go v0.0.0-20240707144350-d04da8be0ed6
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/stretchr/testify v1.9.0
 )
