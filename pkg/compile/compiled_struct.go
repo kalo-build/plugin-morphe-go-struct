@@ -1,6 +1,6 @@
 package compile
 
-import "github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
+import "github.com/kaloseia/go/pkg/godef"
 
 type CompiledStruct struct {
 	Struct         *godef.Struct

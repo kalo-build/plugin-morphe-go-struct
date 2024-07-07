@@ -1,9 +1,9 @@
 package hook
 
 import (
+	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
 )
 
 type CompileMorpheModel struct {

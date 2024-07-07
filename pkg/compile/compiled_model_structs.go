@@ -1,6 +1,6 @@
 package compile
 
-import "github.com/kaloseia/plugin-morphe-go-struct/pkg/godef"
+import "github.com/kaloseia/go/pkg/godef"
 
 // CompiledModelStructs maps Model.Name -> ModelStruct.Name -> CompiledStruct
 type CompiledModelStructs map[string]map[string]CompiledStruct
