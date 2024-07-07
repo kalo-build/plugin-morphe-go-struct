@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/kaloseia/clone"
+	"github.com/kaloseia/morphe-go/pkg/registry"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
@@ -13,6 +14,18 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
 )
+
+func AllMorpheModelsToGoStructs(config MorpheCompileConfig, r *registry.Registry) (map[string][]*godef.Struct, error) {
+	allModelStructDefs := map[string][]*godef.Struct{}
+	for modelName, model := range r.GetAllModels() {
+		modelStructs, modelErr := MorpheModelToGoStructs(config.ModelHooks, config.MorpheModelsConfig, model)
+		if modelErr != nil {
+			return nil, modelErr
+		}
+		allModelStructDefs[modelName] = modelStructs
+	}
+	return allModelStructDefs, nil
+}
 
 func MorpheModelToGoStructs(modelHooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
 	config, model, compileStartErr := triggerCompileMorpheModelStart(modelHooks, config, model)
@@ -65,7 +78,7 @@ func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]
 		}
 		allModelStructs = append(allModelStructs, identStruct)
 
-		modelIdentGetter, modelIdentErr := getModelIdentifierGetter(config, identifierName, identStruct)
+		modelIdentGetter, modelIdentErr := getModelIdentifierGetter(config, modelStruct.Name, identifierName, identStruct)
 		if modelIdentErr != nil {
 			return nil, modelIdentErr
 		}
@@ -162,7 +175,7 @@ func getIdentifierStruct(structPackage godef.Package, modelName string, identifi
 	return &identifierStruct, nil
 }
 
-func getModelIdentifierGetter(config cfg.MorpheModelsConfig, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
+func getModelIdentifierGetter(config cfg.MorpheModelsConfig, modelName string, identifierName string, identStruct *godef.Struct) (godef.StructMethod, error) {
 	identStructType := godef.GoTypeStruct{
 		PackagePath: config.Package.Path,
 		Name:        identStruct.Name,
@@ -172,8 +185,11 @@ func getModelIdentifierGetter(config cfg.MorpheModelsConfig, identifierName stri
 
 	modelIdentGetter := godef.StructMethod{
 		ReceiverName: config.ReceiverName,
-		ReceiverType: identStructType,
-		Name:         fmt.Sprintf("GetID%s", strcase.ToCamelCase(identifierName)),
+		ReceiverType: godef.GoTypeStruct{
+			PackagePath: config.Package.Path,
+			Name:        modelName,
+		},
+		Name: fmt.Sprintf("GetID%s", strcase.ToCamelCase(identifierName)),
 		ReturnTypes: []godef.GoType{
 			identStructType,
 		},
@@ -230,7 +246,7 @@ func triggerCompileMorpheModelSuccess(hooks hook.CompileMorpheModel, allModelStr
 		return allModelStructs, nil
 	}
 	if allModelStructs == nil {
-		return nil, ErrRegistryNotInitialized
+		return nil, ErrNoModelStructs
 	}
 	allModelStructsClone := clone.DeepCloneSlicePointers(allModelStructs)
 

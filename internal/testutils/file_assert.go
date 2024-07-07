@@ -38,5 +38,32 @@ func AssertFileEquals(t *testing.T, actualPath string, expectedPath string, msgA
 		Context:  1,
 	})
 
-	return assert.Fail(t, fmt.Sprintf("File contents differ: \n\nDiff:\n"+diff, readExpectedErr), msgAndArgs...)
+	return assert.Fail(t, fmt.Sprintf("File contents differ: \n\nDiff:\n%s", diff), msgAndArgs...)
+}
+
+func AssertFileContentsEquals(t *testing.T, actualPath string, expectedContents []byte, msgAndArgs ...any) bool {
+	t.Helper()
+
+	actualContents, readActualErr := os.ReadFile(actualPath)
+	if readActualErr != nil {
+		return assert.Fail(t, fmt.Sprintf("Actual could not be read:\n\tError: %s", readActualErr), msgAndArgs...)
+	}
+
+	actualString := string(actualContents)
+	expectedString := string(expectedContents)
+	if actualString == expectedString {
+		return true
+	}
+
+	diff, _ := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
+		A:        difflib.SplitLines(actualString),
+		B:        difflib.SplitLines(expectedString),
+		FromFile: "Actual",
+		FromDate: "",
+		ToFile:   "Expected",
+		ToDate:   "",
+		Context:  1,
+	})
+
+	return assert.Fail(t, fmt.Sprintf("File contents differ: \n\nDiff:\n%s", diff), msgAndArgs...)
 }

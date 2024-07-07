@@ -5,13 +5,13 @@ type ContactInfo struct {
 	ID    uint `mandatory`
 }
 
-func (m ContactInfoIDEmail) GetIDEmail() ContactInfoIDEmail {
+func (m ContactInfo) GetIDEmail() ContactInfoIDEmail {
 	return ContactInfoIDEmail{
 		Email: m.Email,
 	}
 }
 
-func (m ContactInfoIDPrimary) GetIDPrimary() ContactInfoIDPrimary {
+func (m ContactInfo) GetIDPrimary() ContactInfoIDPrimary {
 	return ContactInfoIDPrimary{
 		ID: m.ID,
 	}

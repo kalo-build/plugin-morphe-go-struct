@@ -159,10 +159,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
+	basicType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "Basic"}
 	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, modelsConfig.ReceiverName)
-	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
+	suite.Equal(structMethods00.ReceiverType, basicType)
 	suite.Equal(structMethods00.Name, "GetIDPrimary")
 	suite.Nil(structMethods00.Parameters)
 	suite.Equal(structMethods00.ReturnTypes, []godef.GoType{
@@ -538,10 +539,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
+	basicType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicCHANGED"}
 	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicCHANGEDIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, "CHANGED")
-	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
+	suite.Equal(structMethods00.ReceiverType, basicType)
 	suite.Equal(structMethods00.Name, "GetIDPrimary")
 	suite.Nil(structMethods00.Parameters)
 	suite.Equal(structMethods00.ReturnTypes, []godef.GoType{
@@ -792,10 +794,11 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
+	basicType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "Basic"}
 	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, "GetIDPrimary")
-	suite.Equal(structMethods00.ReceiverType, basicIDPrimaryType)
+	suite.Equal(structMethods00.ReceiverType, basicType)
 	suite.Equal(structMethods00.Name, "GetIDPrimary")
 	suite.Nil(structMethods00.Parameters)
 	suite.Equal(structMethods00.ReturnTypes, []godef.GoType{
