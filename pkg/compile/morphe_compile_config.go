@@ -3,6 +3,7 @@ package compile
 import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/write"
 )
 
 type MorpheCompileConfig struct {
@@ -11,9 +12,8 @@ type MorpheCompileConfig struct {
 
 	RegistryHooks hook.LoadMorpheRegistry
 
-	ModelWriter StructWriter
+	ModelWriter write.GoStructWriter
 	ModelHooks  hook.CompileMorpheModel
 
-	EntityWriter StructWriter
-	EntityHooks  hook.CompileMorpheEntity
+	WriteStructHooks hook.WriteGoStruct
 }

@@ -9,26 +9,26 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/gofile"
 )
 
-type MorpheStructWriter struct {
+type MorpheStructFileWriter struct {
 	Type          MorpheStructType
 	TargetDirPath string
 }
 
-func (w *MorpheStructWriter) WriteStruct(structDefinition *godef.Struct) error {
+func (w *MorpheStructFileWriter) WriteStruct(structDefinition *godef.Struct) ([]byte, error) {
 	allStructLines, allLinesErr := w.getAllStructLines(structDefinition)
 	if allLinesErr != nil {
-		return allLinesErr
+		return nil, allLinesErr
 	}
 
 	structFileContents, structContentsErr := core.LinesToString(allStructLines)
 	if structContentsErr != nil {
-		return structContentsErr
+		return nil, structContentsErr
 	}
 
 	return gofile.WriteGoStructFile(w.TargetDirPath, structDefinition.Name, structFileContents)
 }
 
-func (w *MorpheStructWriter) getAllStructLines(structDefinition *godef.Struct) ([]string, error) {
+func (w *MorpheStructFileWriter) getAllStructLines(structDefinition *godef.Struct) ([]string, error) {
 	allStructLines := []string{}
 
 	packageLine := fmt.Sprintf("package %s", structDefinition.Package.Name)
@@ -59,7 +59,7 @@ func (w *MorpheStructWriter) getAllStructLines(structDefinition *godef.Struct) (
 	return allStructLines, nil
 }
 
-func (w *MorpheStructWriter) getAllStructImportLines(structDefinition *godef.Struct) ([]string, error) {
+func (w *MorpheStructFileWriter) getAllStructImportLines(structDefinition *godef.Struct) ([]string, error) {
 	if len(structDefinition.Imports) == 0 {
 		return nil, nil
 	}
@@ -82,7 +82,7 @@ func (w *MorpheStructWriter) getAllStructImportLines(structDefinition *godef.Str
 	return allImportLines, nil
 }
 
-func (w *MorpheStructWriter) getAllStructTypeLines(structDefinition *godef.Struct) ([]string, error) {
+func (w *MorpheStructFileWriter) getAllStructTypeLines(structDefinition *godef.Struct) ([]string, error) {
 
 	allTypeLines := []string{
 		fmt.Sprintf("type %s struct {", structDefinition.Name),
@@ -104,7 +104,7 @@ func (w *MorpheStructWriter) getAllStructTypeLines(structDefinition *godef.Struc
 	return allTypeLines, nil
 }
 
-func (w *MorpheStructWriter) getAllStructMethodLines(currentPackage godef.Package, structMethods []godef.StructMethod) ([]string, error) {
+func (w *MorpheStructFileWriter) getAllStructMethodLines(currentPackage godef.Package, structMethods []godef.StructMethod) ([]string, error) {
 	allMethodLines := []string{}
 
 	for _, structMethod := range structMethods {
@@ -119,7 +119,7 @@ func (w *MorpheStructWriter) getAllStructMethodLines(currentPackage godef.Packag
 	return allMethodLines, nil
 }
 
-func (w *MorpheStructWriter) getStructMethodLines(currentPackage godef.Package, structMethod godef.StructMethod) ([]string, error) {
+func (w *MorpheStructFileWriter) getStructMethodLines(currentPackage godef.Package, structMethod godef.StructMethod) ([]string, error) {
 	receiverName := structMethod.ReceiverName
 	receiverType := structMethod.ReceiverType.GetSyntaxLocal()
 	methodParamBlock := w.getStructMethodParameterString(structMethod.Parameters)
@@ -136,7 +136,7 @@ func (w *MorpheStructWriter) getStructMethodLines(currentPackage godef.Package, 
 	return methodLines, nil
 }
 
-func (w *MorpheStructWriter) getStructMethodParameterString(parameters map[string]godef.GoType) string {
+func (w *MorpheStructFileWriter) getStructMethodParameterString(parameters map[string]godef.GoType) string {
 	if parameters == nil {
 		return ""
 	}
@@ -151,7 +151,7 @@ func (w *MorpheStructWriter) getStructMethodParameterString(parameters map[strin
 	return strings.Join(parameterStrings, ", ")
 }
 
-func (w *MorpheStructWriter) getStructMethodReturnString(currentPackage godef.Package, returnTypes []godef.GoType) string {
+func (w *MorpheStructFileWriter) getStructMethodReturnString(currentPackage godef.Package, returnTypes []godef.GoType) string {
 	if returnTypes == nil {
 		return ""
 	}

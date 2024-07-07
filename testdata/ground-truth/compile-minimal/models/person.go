@@ -6,14 +6,14 @@ type Person struct {
 	LastName  string
 }
 
-func (m PersonIDName) GetIDName() PersonIDName {
+func (m Person) GetIDName() PersonIDName {
 	return PersonIDName{
 		FirstName: m.FirstName,
 		LastName:  m.LastName,
 	}
 }
 
-func (m PersonIDPrimary) GetIDPrimary() PersonIDPrimary {
+func (m Person) GetIDPrimary() PersonIDPrimary {
 	return PersonIDPrimary{
 		ID: m.ID,
 	}

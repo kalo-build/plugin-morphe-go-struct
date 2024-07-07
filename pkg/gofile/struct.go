@@ -8,10 +8,10 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/strcase"
 )
 
-func WriteGoStructFile(dirPath string, structName string, structFileContents string) error {
+func WriteGoStructFile(dirPath string, structName string, structFileContents string) ([]byte, error) {
 	formattedStructContents, formatErr := format.Source([]byte(structFileContents))
 	if formatErr != nil {
-		return formatErr
+		return nil, formatErr
 	}
 
 	structFileName := strcase.ToSnakeCaseLower(structName)
@@ -19,8 +19,8 @@ func WriteGoStructFile(dirPath string, structName string, structFileContents str
 	if _, readErr := os.ReadDir(dirPath); readErr != nil && os.IsNotExist(readErr) {
 		mkDirErr := os.MkdirAll(dirPath, 0644)
 		if mkDirErr != nil {
-			return mkDirErr
+			return nil, mkDirErr
 		}
 	}
-	return os.WriteFile(structFilePath, formattedStructContents, 0644)
+	return formattedStructContents, os.WriteFile(structFilePath, formattedStructContents, 0644)
 }
