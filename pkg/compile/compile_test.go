@@ -21,8 +21,10 @@ type CompileTestSuite struct {
 	TestDirPath            string
 	TestGroundTruthDirPath string
 
-	ModelsDirPath   string
-	EntitiesDirPath string
+	ModelsDirPath     string
+	EnumsDirPath      string
+	StructuresDirPath string
+	EntitiesDirPath   string
 }
 
 func TestCompileTestSuite(t *testing.T) {
@@ -34,6 +36,8 @@ func (suite *CompileTestSuite) SetupTest() {
 	suite.TestGroundTruthDirPath = filepath.Join(suite.TestDirPath, "ground-truth", "compile-minimal")
 
 	suite.ModelsDirPath = filepath.Join(suite.TestDirPath, "registry", "minimal", "models")
+	suite.EnumsDirPath = filepath.Join(suite.TestDirPath, "registry", "minimal", "enums")
+	suite.StructuresDirPath = filepath.Join(suite.TestDirPath, "registry", "minimal", "structures")
 	suite.EntitiesDirPath = filepath.Join(suite.TestDirPath, "registry", "minimal", "entities")
 }
 
@@ -48,8 +52,10 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 
 	config := compile.MorpheCompileConfig{
 		MorpheLoadRegistryConfig: rcfg.MorpheLoadRegistryConfig{
-			RegistryModelsDirPath:   suite.ModelsDirPath,
-			RegistryEntitiesDirPath: suite.EntitiesDirPath,
+			RegistryEnumsDirPath:      suite.EnumsDirPath,
+			RegistryStructuresDirPath: suite.StructuresDirPath,
+			RegistryModelsDirPath:     suite.ModelsDirPath,
+			RegistryEntitiesDirPath:   suite.EntitiesDirPath,
 		},
 
 		MorpheModelsConfig: cfg.MorpheModelsConfig{
@@ -138,4 +144,5 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 	suite.FileContentsEquals(gtModelIDPath11, model12.StructContents)
 	suite.NotNil(model11.Struct)
 
+	// TODO: Entities
 }
