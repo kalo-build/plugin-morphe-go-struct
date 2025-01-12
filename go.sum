@@ -8,6 +8,8 @@ github.com/kaloseia/clone v0.0.0-20240601081950-41de0e12ccb4 h1:KrvtOfoRvXaRJgAO
 github.com/kaloseia/clone v0.0.0-20240601081950-41de0e12ccb4/go.mod h1:7WCoAMMzw+oRQq5HdR+v1emyTQDkSGw1W47f2zqguoE=
 github.com/kaloseia/go v0.0.0-20240707130817-3f244803c2c8 h1:fEzt6kiUbeBRRhO3FJiU2+V/2vlWh9RmyK1yW2ABGfE=
 github.com/kaloseia/go v0.0.0-20240707130817-3f244803c2c8/go.mod h1:6oG48PzWeL9MmuxMNrxf6O5vTx2KXI8qHYeWQBMGucQ=
+github.com/kaloseia/go v0.0.0-20250112145432-f059fe047827 h1:VNaT1jDJC34u4fWVRzxkjPacouwPVdv1xp5u28JXjEo=
+github.com/kaloseia/go v0.0.0-20250112145432-f059fe047827/go.mod h1:6oG48PzWeL9MmuxMNrxf6O5vTx2KXI8qHYeWQBMGucQ=
 github.com/kaloseia/go-util v0.0.0-20240710152636-8268868e8c7c h1:xseBgWbE6TLnvDBQ4+1PpSpGOZMWB5tmCuNuXl9P1z8=
 github.com/kaloseia/go-util v0.0.0-20240710152636-8268868e8c7c/go.mod h1:gLFd0eirWSNNgX7c6fI5rbOimTII2Mpd/m91tq0YEtg=
 github.com/kaloseia/morphe-go v0.0.0-20250111161508-90f1ab66555e h1:2fH+zsIO8JFqVRVlrxOENUH1R1ReopZLXHsZBp1olTQ=

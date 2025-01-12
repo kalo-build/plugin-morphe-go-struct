@@ -8,6 +8,8 @@ fields:
     type: String
   LastName:
     type: String
+  Nationality:
+    type: Nationality
 identifiers:
   primary: ID
   name:
@@ -16,3 +18,5 @@ identifiers:
 related:
   ContactInfo:
     type: HasOne
+  Company:
+    type: ForOne

@@ -996,4 +996,97 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_FailureHook_NoPa
 	suite.Nil(allGoStructs)
 }
 
-// TODO: Related
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_EnumField() {
+	modelHooks := hook.CompileMorpheModel{}
+
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+
+	enumsConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/enums",
+			Name: "enums",
+		},
+	}
+
+	model0 := yaml.Model{
+		Name: "Basic",
+		Fields: map[string]yaml.ModelField{
+			"AutoIncrement": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Nationality": {
+				Type: "Nationality",
+			},
+			"UUID": {
+				Type: yaml.ModelFieldTypeUUID,
+				Attributes: []string{
+					"immutable",
+				},
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"UUID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{},
+	}
+
+	enum0 := yaml.Enum{
+		Name: "Nationality",
+		Type: yaml.EnumTypeString,
+		Entries: map[string]any{
+			"US": "American",
+			"DE": "German",
+			"FR": "French",
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetEnum("Nationality", enum0)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Basic")
+
+	fields0 := goStruct0.Fields
+	suite.Len(fields0, 3)
+
+	field00 := fields0[0]
+	suite.Equal(field00.Name, "AutoIncrement")
+	suite.Equal(field00.Type, godef.GoTypeUint)
+
+	field01 := fields0[1]
+	suite.Equal(field01.Name, "Nationality")
+	suite.Equal(field01.Type, godef.GoTypeDerived{
+		PackagePath: enumsConfig.Package.Path,
+		Name:        "Nationality",
+		BaseType:    godef.GoTypeString,
+	})
+
+	field02 := fields0[2]
+	suite.Equal(field02.Name, "UUID")
+	suite.Equal(field02.Type, godef.GoTypeString)
+
+	goStruct1 := allGoStructs[1]
+	suite.Equal(goStruct1.Name, "BasicIDPrimary")
+
+	fields1 := goStruct1.Fields
+	suite.Len(fields1, 1)
+
+	field10 := fields1[0]
+	suite.Equal(field10.Name, "UUID")
+	suite.Equal(field10.Type, godef.GoTypeString)
+}
