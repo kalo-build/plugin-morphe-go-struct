@@ -18,7 +18,7 @@ import (
 func AllMorpheModelsToGoStructs(config MorpheCompileConfig, r *registry.Registry) (map[string][]*godef.Struct, error) {
 	allModelStructDefs := map[string][]*godef.Struct{}
 	for modelName, model := range r.GetAllModels() {
-		modelStructs, modelErr := MorpheModelToGoStructs(config.ModelHooks, config.MorpheModelsConfig, model)
+		modelStructs, modelErr := MorpheModelToGoStructs(config.ModelHooks, config.MorpheModelsConfig, r, model)
 		if modelErr != nil {
 			return nil, modelErr
 		}
@@ -27,12 +27,12 @@ func AllMorpheModelsToGoStructs(config MorpheCompileConfig, r *registry.Registry
 	return allModelStructDefs, nil
 }
 
-func MorpheModelToGoStructs(modelHooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+func MorpheModelToGoStructs(modelHooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, r *registry.Registry, model yaml.Model) ([]*godef.Struct, error) {
 	config, model, compileStartErr := triggerCompileMorpheModelStart(modelHooks, config, model)
 	if compileStartErr != nil {
 		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, compileStartErr)
 	}
-	allModelStructs, structsErr := morpheModelToGoStructs(config, model)
+	allModelStructs, structsErr := morpheModelToGoStructs(config, r, model)
 	if structsErr != nil {
 		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, structsErr)
 	}
@@ -44,12 +44,12 @@ func MorpheModelToGoStructs(modelHooks hook.CompileMorpheModel, config cfg.Morph
 	return allModelStructs, nil
 }
 
-func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
+func morpheModelToGoStructs(config cfg.MorpheModelsConfig, r *registry.Registry, model yaml.Model) ([]*godef.Struct, error) {
 	validateConfigErr := config.Validate()
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
 	}
-	validateMorpheErr := model.Validate()
+	validateMorpheErr := model.Validate(r.GetAllEnums())
 	if validateMorpheErr != nil {
 		return nil, validateMorpheErr
 	}

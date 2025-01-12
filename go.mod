@@ -5,8 +5,8 @@ go 1.21.6
 require (
 	github.com/kaloseia/clone v0.0.0-20240601081950-41de0e12ccb4
 	github.com/kaloseia/go v0.0.0-20240707130817-3f244803c2c8
-	github.com/kaloseia/go-util v0.0.0-20240707192647-19efb1b2840c
-	github.com/kaloseia/morphe-go v0.0.0-20240707200223-03b5c14e5066
+	github.com/kaloseia/go-util v0.0.0-20240710152636-8268868e8c7c
+	github.com/kaloseia/morphe-go v0.0.0-20250111161508-90f1ab66555e
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/stretchr/testify v1.9.0
 )

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/kaloseia/go/pkg/godef"
+	"github.com/kaloseia/morphe-go/pkg/registry"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
@@ -84,7 +85,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -222,7 +225,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package path cannot be empty")
@@ -258,7 +263,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package name cannot be empty")
@@ -294,7 +301,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models method receiver name cannot be empty")
@@ -330,7 +339,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no name")
@@ -362,7 +373,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no fields")
@@ -392,7 +405,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() 
 		Related:     map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no identifiers")
@@ -469,7 +484,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -640,7 +657,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Failur
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "compile model start hook error")
@@ -724,7 +743,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -895,7 +916,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Fail
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "compile model success hook error")
@@ -964,9 +987,13 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_FailureHook_NoPa
 		Related: map[string]yaml.ModelRelation{},
 	}
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, model0)
+	r := registry.NewRegistry()
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "Model Basic: models package path cannot be empty")
 	suite.Nil(allGoStructs)
 }
+
+// TODO: Related

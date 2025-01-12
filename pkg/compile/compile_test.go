@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/kaloseia/go-util/assertfile"
 	"github.com/kaloseia/go/pkg/godef"
 	rcfg "github.com/kaloseia/morphe-go/pkg/registry/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/internal/testutils"
@@ -15,7 +16,7 @@ import (
 )
 
 type CompileTestSuite struct {
-	testutils.FileSuite
+	assertfile.FileSuite
 
 	TestDirPath            string
 	TestGroundTruthDirPath string
