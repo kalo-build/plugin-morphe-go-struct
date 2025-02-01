@@ -28,14 +28,18 @@ func (suite *CompileModelsTestSuite) TearDownTest() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -87,7 +91,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -198,14 +202,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -227,7 +235,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package path cannot be empty")
@@ -236,14 +244,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -265,7 +277,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models package name cannot be empty")
@@ -274,14 +286,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -303,7 +319,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "models method receiver name cannot be empty")
@@ -312,14 +328,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -341,7 +361,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no name")
@@ -350,14 +370,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -375,7 +399,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no fields")
@@ -384,14 +408,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
-	modelHooks := hook.CompileMorpheModel{}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
 	}
 
 	model0 := yaml.Model{
@@ -407,7 +435,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() 
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "morphe model has no identifiers")
@@ -418,7 +446,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Successful() {
 	var featureFlag = "otherName"
 	modelHooks := hook.CompileMorpheModel{
-		OnCompileMorpheModelStart: func(config cfg.MorpheModelsConfig, model yaml.Model) (cfg.MorpheModelsConfig, yaml.Model, error) {
+		OnCompileMorpheModelStart: func(config cfg.MorpheConfig, model yaml.Model) (cfg.MorpheConfig, yaml.Model, error) {
 			if featureFlag != "otherName" {
 				return config, model, nil
 			}
@@ -428,13 +456,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 			return config, model, nil
 		},
 	}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: modelHooks,
 	}
 
 	model0 := yaml.Model{
@@ -486,7 +519,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -594,20 +627,25 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Failure() {
 	var featureFlag = "otherName"
 	modelHooks := hook.CompileMorpheModel{
-		OnCompileMorpheModelStart: func(config cfg.MorpheModelsConfig, model yaml.Model) (cfg.MorpheModelsConfig, yaml.Model, error) {
+		OnCompileMorpheModelStart: func(config cfg.MorpheConfig, model yaml.Model) (cfg.MorpheConfig, yaml.Model, error) {
 			if featureFlag != "otherName" {
 				return config, model, nil
 			}
 			return config, model, fmt.Errorf("compile model start hook error")
 		},
 	}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: modelHooks,
 	}
 
 	model0 := yaml.Model{
@@ -659,7 +697,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Failur
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "compile model start hook error")
@@ -687,13 +725,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 			return allModelStructs, nil
 		},
 	}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: modelHooks,
 	}
 
 	model0 := yaml.Model{
@@ -745,7 +788,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)
@@ -860,13 +903,18 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Fail
 			return nil, fmt.Errorf("compile model success hook error")
 		},
 	}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: modelHooks,
 	}
 
 	model0 := yaml.Model{
@@ -918,7 +966,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Fail
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "compile model success hook error")
@@ -927,17 +975,22 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Fail
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_FailureHook_NoPackagePath() {
 	modelHooks := hook.CompileMorpheModel{
-		OnCompileMorpheModelFailure: func(config cfg.MorpheModelsConfig, model yaml.Model, compileFailure error) error {
+		OnCompileMorpheModelFailure: func(config cfg.MorpheConfig, model yaml.Model, compileFailure error) error {
 			return fmt.Errorf("Model %s: %w", model.Name, compileFailure)
 		},
 	}
-
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "",
 			Name: "models",
 		},
 		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: modelHooks,
 	}
 
 	model0 := yaml.Model{
@@ -989,7 +1042,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_FailureHook_NoPa
 
 	r := registry.NewRegistry()
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "Model Basic: models package path cannot be empty")
@@ -1012,6 +1065,13 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_EnumField() {
 			Path: "github.com/kaloseia/project/domain/enums",
 			Name: "enums",
 		},
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+			MorpheEnumsConfig:  enumsConfig,
+		},
+		ModelHooks: modelHooks,
 	}
 
 	model0 := yaml.Model{
@@ -1053,7 +1113,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_EnumField() {
 	r := registry.NewRegistry()
 	r.SetEnum("Nationality", enum0)
 
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(modelHooks, modelsConfig, r, model0)
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
 
 	suite.Nil(allStructsErr)
 	suite.Len(allGoStructs, 2)

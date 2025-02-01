@@ -12,6 +12,6 @@ type CompileMorpheModel struct {
 	OnCompileMorpheModelFailure OnCompileMorpheModelFailureHook
 }
 
-type OnCompileMorpheModelStartHook = func(config cfg.MorpheModelsConfig, model yaml.Model) (cfg.MorpheModelsConfig, yaml.Model, error)
+type OnCompileMorpheModelStartHook = func(config cfg.MorpheConfig, model yaml.Model) (cfg.MorpheConfig, yaml.Model, error)
 type OnCompileMorpheModelSuccessHook = func(allModelStructs []*godef.Struct) ([]*godef.Struct, error)
-type OnCompileMorpheModelFailureHook = func(config cfg.MorpheModelsConfig, model yaml.Model, compileFailure error) error
+type OnCompileMorpheModelFailureHook = func(config cfg.MorpheConfig, model yaml.Model, compileFailure error) error

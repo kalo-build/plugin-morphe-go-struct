@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/kaloseia/clone v0.0.0-20240601081950-41de0e12ccb4
-	github.com/kaloseia/go v0.0.0-20250112145432-f059fe047827
+	github.com/kaloseia/go v0.0.0-20250201193523-5ecda071d544
 	github.com/kaloseia/go-util v0.0.0-20240710152636-8268868e8c7c
 	github.com/kaloseia/morphe-go v0.0.0-20250111161508-90f1ab66555e
 	github.com/stretchr/testify v1.9.0

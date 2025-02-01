@@ -45,7 +45,7 @@ func (suite *CompileTestSuite) TearDownTest() {
 	suite.TestDirPath = ""
 }
 
-func (suite *CompileTestSuite) TestMorpheToGoStructs() {
+func (suite *CompileTestSuite) TestMorpheToGo() {
 	workingDirPath := suite.TestDirPath + "/working"
 	suite.Nil(os.Mkdir(workingDirPath, 0644))
 	defer os.RemoveAll(workingDirPath)
@@ -57,22 +57,33 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 			RegistryModelsDirPath:     suite.ModelsDirPath,
 			RegistryEntitiesDirPath:   suite.EntitiesDirPath,
 		},
-
-		MorpheModelsConfig: cfg.MorpheModelsConfig{
-			Package: godef.Package{
-				Path: "github.com/kaloseia/dummy/models",
-				Name: "models",
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: cfg.MorpheModelsConfig{
+				Package: godef.Package{
+					Path: "github.com/kaloseia/dummy/models",
+					Name: "models",
+				},
+				ReceiverName: "m",
 			},
-			ReceiverName: "m",
+			MorpheEnumsConfig: cfg.MorpheEnumsConfig{
+				Package: godef.Package{
+					Path: "github.com/kaloseia/dummy/enums",
+					Name: "enums",
+				},
+			},
 		},
 
 		ModelWriter: &compile.MorpheStructFileWriter{
 			Type:          compile.MorpheStructTypeModels,
 			TargetDirPath: workingDirPath + "/models",
 		},
+
+		EnumWriter: &compile.MorpheEnumFileWriter{
+			TargetDirPath: workingDirPath + "/enums",
+		},
 	}
 
-	allWrittenModels, compileErr := compile.MorpheToGoStructs(config)
+	compileErr := compile.MorpheToGo(config)
 
 	suite.NoError(compileErr)
 
@@ -110,39 +121,17 @@ func (suite *CompileTestSuite) TestMorpheToGoStructs() {
 	suite.FileExists(modelIDPath11)
 	suite.FileEquals(modelIDPath11, gtModelIDPath11)
 
-	suite.Len(allWrittenModels, 2)
+	enumsDirPath := workingDirPath + "/enums"
+	gtEnumsDirPath := suite.TestGroundTruthDirPath + "/enums"
+	suite.DirExists(enumsDirPath)
 
-	// Contact Info
-	model0 := allWrittenModels.GetAllCompiledModelStructs("ContactInfo")
-	suite.Len(model0, 3)
+	enumPath0 := enumsDirPath + "/nationality.go"
+	gtEnumPath0 := gtEnumsDirPath + "/nationality.go"
+	suite.FileExists(enumPath0)
+	suite.FileEquals(enumPath0, gtEnumPath0)
 
-	model00 := allWrittenModels.GetCompiledModelStruct("ContactInfo", "ContactInfo")
-	suite.FileContentsEquals(gtModelPath0, model00.StructContents)
-	suite.NotNil(model00.Struct)
-
-	model01 := allWrittenModels.GetCompiledModelStruct("ContactInfo", "ContactInfoIDEmail")
-	suite.FileContentsEquals(gtModelIDPath00, model01.StructContents)
-	suite.NotNil(model01.Struct)
-
-	model02 := allWrittenModels.GetCompiledModelStruct("ContactInfo", "ContactInfoIDPrimary")
-	suite.FileContentsEquals(gtModelIDPath01, model02.StructContents)
-	suite.NotNil(model02.Struct)
-
-	// Person
-	model1 := allWrittenModels.GetAllCompiledModelStructs("Person")
-	suite.Len(model1, 3)
-
-	model10 := allWrittenModels.GetCompiledModelStruct("Person", "Person")
-	suite.FileContentsEquals(gtModelPath1, model10.StructContents)
-	suite.NotNil(model10.Struct)
-
-	model11 := allWrittenModels.GetCompiledModelStruct("Person", "PersonIDName")
-	suite.FileContentsEquals(gtModelIDPath10, model11.StructContents)
-	suite.NotNil(model11.Struct)
-
-	model12 := allWrittenModels.GetCompiledModelStruct("Person", "PersonIDPrimary")
-	suite.FileContentsEquals(gtModelIDPath11, model12.StructContents)
-	suite.NotNil(model11.Struct)
-
-	// TODO: Entities
+	enumPath1 := enumsDirPath + "/universal_number.go"
+	gtEnumPath1 := gtEnumsDirPath + "/universal_number.go"
+	suite.FileExists(enumPath1)
+	suite.FileEquals(enumPath1, gtEnumPath1)
 }

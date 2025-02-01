@@ -1,9 +1,14 @@
 package models
 
+import (
+	"github.com/kaloseia/dummy/enums"
+)
+
 type Person struct {
-	FirstName string
-	ID        uint `mandatory`
-	LastName  string
+	FirstName   string
+	ID          uint `mandatory`
+	LastName    string
+	Nationality enums.Nationality
 }
 
 func (m Person) GetIDName() PersonIDName {
