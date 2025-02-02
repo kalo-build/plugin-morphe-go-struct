@@ -25,7 +25,7 @@ func (w *MorpheStructFileWriter) WriteStruct(structDefinition *godef.Struct) ([]
 		return nil, structContentsErr
 	}
 
-	return gofile.WriteGoStructFile(w.TargetDirPath, structDefinition.Name, structFileContents)
+	return gofile.WriteGoDefinitionFile(w.TargetDirPath, structDefinition.Name, structFileContents)
 }
 
 func (w *MorpheStructFileWriter) getAllStructLines(structDefinition *godef.Struct) ([]string, error) {

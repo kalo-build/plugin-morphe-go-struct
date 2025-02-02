@@ -18,7 +18,7 @@ import (
 func AllMorpheModelsToGoStructs(config MorpheCompileConfig, r *registry.Registry) (map[string][]*godef.Struct, error) {
 	allModelStructDefs := map[string][]*godef.Struct{}
 	for modelName, model := range r.GetAllModels() {
-		modelStructs, modelErr := MorpheModelToGoStructs(config.ModelHooks, config.MorpheModelsConfig, model)
+		modelStructs, modelErr := MorpheModelToGoStructs(config, r, model)
 		if modelErr != nil {
 			return nil, modelErr
 		}
@@ -27,34 +27,36 @@ func AllMorpheModelsToGoStructs(config MorpheCompileConfig, r *registry.Registry
 	return allModelStructDefs, nil
 }
 
-func MorpheModelToGoStructs(modelHooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
-	config, model, compileStartErr := triggerCompileMorpheModelStart(modelHooks, config, model)
+func MorpheModelToGoStructs(config MorpheCompileConfig, r *registry.Registry, model yaml.Model) ([]*godef.Struct, error) {
+	morpheConfig, model, compileStartErr := triggerCompileMorpheModelStart(config.ModelHooks, config.MorpheConfig, model)
 	if compileStartErr != nil {
-		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, compileStartErr)
+		return nil, triggerCompileMorpheModelFailure(config.ModelHooks, morpheConfig, model, compileStartErr)
 	}
-	allModelStructs, structsErr := morpheModelToGoStructs(config, model)
+	config.MorpheConfig = morpheConfig
+
+	allModelStructs, structsErr := morpheModelToGoStructs(config, r, model)
 	if structsErr != nil {
-		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, structsErr)
+		return nil, triggerCompileMorpheModelFailure(config.ModelHooks, morpheConfig, model, structsErr)
 	}
 
-	allModelStructs, compileSuccessErr := triggerCompileMorpheModelSuccess(modelHooks, allModelStructs)
+	allModelStructs, compileSuccessErr := triggerCompileMorpheModelSuccess(config.ModelHooks, allModelStructs)
 	if compileSuccessErr != nil {
-		return nil, triggerCompileMorpheModelFailure(modelHooks, config, model, compileSuccessErr)
+		return nil, triggerCompileMorpheModelFailure(config.ModelHooks, morpheConfig, model, compileSuccessErr)
 	}
 	return allModelStructs, nil
 }
 
-func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]*godef.Struct, error) {
-	validateConfigErr := config.Validate()
+func morpheModelToGoStructs(config MorpheCompileConfig, r *registry.Registry, model yaml.Model) ([]*godef.Struct, error) {
+	validateConfigErr := config.MorpheModelsConfig.Validate()
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
 	}
-	validateMorpheErr := model.Validate()
+	validateMorpheErr := model.Validate(r.GetAllEnums())
 	if validateMorpheErr != nil {
 		return nil, validateMorpheErr
 	}
 
-	modelStruct, modelStructErr := getModelStruct(config.Package, model)
+	modelStruct, modelStructErr := getModelStruct(config, r, model)
 	if modelStructErr != nil {
 		return nil, modelStructErr
 	}
@@ -72,13 +74,13 @@ func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]
 			return nil, identFieldDefsErr
 		}
 
-		identStruct, identStructErr := getIdentifierStruct(config.Package, modelStruct.Name, identifierName, allIdentFieldDefs)
+		identStruct, identStructErr := getIdentifierStruct(config.MorpheModelsConfig.Package, modelStruct.Name, identifierName, allIdentFieldDefs)
 		if identStructErr != nil {
 			return nil, identStructErr
 		}
 		allModelStructs = append(allModelStructs, identStruct)
 
-		modelIdentGetter, modelIdentErr := getModelIdentifierGetter(config, modelStruct.Name, identifierName, identStruct)
+		modelIdentGetter, modelIdentErr := getModelIdentifierGetter(config.MorpheModelsConfig, modelStruct.Name, identifierName, identStruct)
 		if modelIdentErr != nil {
 			return nil, modelIdentErr
 		}
@@ -87,12 +89,12 @@ func morpheModelToGoStructs(config cfg.MorpheModelsConfig, model yaml.Model) ([]
 	return allModelStructs, nil
 }
 
-func getModelStruct(structPackage godef.Package, model yaml.Model) (*godef.Struct, error) {
+func getModelStruct(config MorpheCompileConfig, r *registry.Registry, model yaml.Model) (*godef.Struct, error) {
 	modelStruct := godef.Struct{
-		Package: structPackage,
+		Package: config.MorpheModelsConfig.Package,
 		Name:    model.Name,
 	}
-	structFields, fieldsErr := getGoFieldsForMorpheModel(model.Fields)
+	structFields, fieldsErr := getGoFieldsForMorpheModel(config.MorpheEnumsConfig.Package, r.GetAllEnums(), model.Fields)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -107,16 +109,24 @@ func getModelStruct(structPackage godef.Package, model yaml.Model) (*godef.Struc
 	return &modelStruct, nil
 }
 
-func getGoFieldsForMorpheModel(modelFields map[string]yaml.ModelField) ([]godef.StructField, error) {
+func getGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[string]yaml.Enum, modelFields map[string]yaml.ModelField) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allFieldNames := core.MapKeysSorted(modelFields)
 	for _, fieldName := range allFieldNames {
 		fieldDef := modelFields[fieldName]
+
+		goEnumField := getEnumFieldAsStructFieldType(enumPackage, allEnums, fieldName, string(fieldDef.Type))
+		if goEnumField.Name != "" && goEnumField.Type != nil {
+			allFields = append(allFields, goEnumField)
+			continue
+		}
+
 		goFieldType, typeSupported := typemap.MorpheFieldToGoField[fieldDef.Type]
 		if !typeSupported {
 			return nil, ErrUnsupportedMorpheFieldType(fieldDef.Type)
 		}
+
 		goField := godef.StructField{
 			Name: fieldName,
 			Type: goFieldType,
@@ -125,6 +135,29 @@ func getGoFieldsForMorpheModel(modelFields map[string]yaml.ModelField) ([]godef.
 		allFields = append(allFields, goField)
 	}
 	return allFields, nil
+}
+
+func getEnumFieldAsStructFieldType(enumPackage godef.Package, allEnums map[string]yaml.Enum, fieldName string, enumName string) godef.StructField {
+	if len(allEnums) == 0 {
+		return godef.StructField{}
+	}
+
+	enumType, enumTypeExists := allEnums[enumName]
+	if !enumTypeExists {
+		return godef.StructField{}
+	}
+
+	goFieldType, conversionErr := MorpheEnumTypeToGoType(enumPackage, enumType.Name, enumType.Type)
+	if conversionErr != nil {
+		return godef.StructField{}
+	}
+
+	goField := godef.StructField{
+		Name: fieldName,
+		Type: goFieldType,
+	}
+
+	return goField
 }
 
 func getIdentifierStructFieldSubset(modelStruct godef.Struct, identifierName string, identifier yaml.ModelIdentifier) ([]godef.StructField, error) {
@@ -215,14 +248,14 @@ func getImportsForStructFields(allFields []godef.StructField) ([]string, error) 
 	return allStructImports, nil
 }
 
-func triggerCompileMorpheModelStart(hooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model) (cfg.MorpheModelsConfig, yaml.Model, error) {
-	if hooks.OnCompileMorpheModelStart == nil {
+func triggerCompileMorpheModelStart(modelHooks hook.CompileMorpheModel, config cfg.MorpheConfig, model yaml.Model) (cfg.MorpheConfig, yaml.Model, error) {
+	if modelHooks.OnCompileMorpheModelStart == nil {
 		return config, model, nil
 	}
 
-	updatedConfig, updatedModel, startErr := hooks.OnCompileMorpheModelStart(config, model)
+	updatedConfig, updatedModel, startErr := modelHooks.OnCompileMorpheModelStart(config, model)
 	if startErr != nil {
-		return cfg.MorpheModelsConfig{}, yaml.Model{}, startErr
+		return cfg.MorpheConfig{}, yaml.Model{}, startErr
 	}
 
 	return updatedConfig, updatedModel, nil
@@ -244,10 +277,10 @@ func triggerCompileMorpheModelSuccess(hooks hook.CompileMorpheModel, allModelStr
 	return allModelStructs, nil
 }
 
-func triggerCompileMorpheModelFailure(hooks hook.CompileMorpheModel, config cfg.MorpheModelsConfig, model yaml.Model, failureErr error) error {
+func triggerCompileMorpheModelFailure(hooks hook.CompileMorpheModel, morpheConfig cfg.MorpheConfig, model yaml.Model, failureErr error) error {
 	if hooks.OnCompileMorpheModelFailure == nil {
 		return failureErr
 	}
 
-	return hooks.OnCompileMorpheModelFailure(config, model.DeepClone(), failureErr)
+	return hooks.OnCompileMorpheModelFailure(morpheConfig, model.DeepClone(), failureErr)
 }
