@@ -1,10 +1,13 @@
 package compile
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/kaloseia/morphe-go/pkg/yaml"
 )
+
+var ErrNoRegistry = errors.New("registry not initialized")
 
 func ErrUnsupportedMorpheFieldType(unsupportedType yaml.ModelFieldType) error {
 	return fmt.Errorf("unsupported morphe field type for go conversion: '%s'", unsupportedType)
