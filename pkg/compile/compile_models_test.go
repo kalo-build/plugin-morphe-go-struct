@@ -1243,8 +1243,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne()
 	suite.Equal(structFields03.Name, "BasicParent")
 	suite.Equal(structFields03.Type, godef.GoTypePointer{
 		ValueType: godef.GoTypeStruct{
-			PackagePath: modelsConfig.Package.Path,
-			Name:        "BasicParent",
+			Name: "BasicParent",
 		},
 	})
 
@@ -1350,6 +1349,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany(
 	structFields02 := structFields0[2]
 	suite.Equal(structFields02.Name, "BasicParentIDs")
 	suite.Equal(structFields02.Type, godef.GoTypeArray{
+		IsSlice:   true,
 		ValueType: godef.GoTypeUint,
 	})
 	suite.Len(structFields02.Tags, 0)
@@ -1357,10 +1357,10 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany(
 	structFields03 := structFields0[3]
 	suite.Equal(structFields03.Name, "BasicParents")
 	suite.Equal(structFields03.Type, godef.GoTypeArray{
+		IsSlice: true,
 		ValueType: godef.GoTypePointer{
 			ValueType: godef.GoTypeStruct{
-				PackagePath: modelsConfig.Package.Path,
-				Name:        "BasicParent",
+				Name: "BasicParent",
 			},
 		},
 	})
@@ -1478,8 +1478,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne()
 	suite.Equal(structFields03.Name, "Basic")
 	suite.Equal(structFields03.Type, godef.GoTypePointer{
 		ValueType: godef.GoTypeStruct{
-			PackagePath: modelsConfig.Package.Path,
-			Name:        "Basic",
+			Name: "Basic",
 		},
 	})
 	suite.Len(structFields03.Tags, 0)
@@ -1589,6 +1588,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	structFields02 := structFields0[2]
 	suite.Equal(structFields02.Name, "BasicIDs")
 	suite.Equal(structFields02.Type, godef.GoTypeArray{
+		IsSlice:   true,
 		ValueType: godef.GoTypeUint,
 	})
 	suite.Len(structFields02.Tags, 0)
@@ -1596,10 +1596,10 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	structFields03 := structFields0[3]
 	suite.Equal(structFields03.Name, "Basics")
 	suite.Equal(structFields03.Type, godef.GoTypeArray{
+		IsSlice: true,
 		ValueType: godef.GoTypePointer{
 			ValueType: godef.GoTypeStruct{
-				PackagePath: modelsConfig.Package.Path,
-				Name:        "Basic",
+				Name: "Basic",
 			},
 		},
 	})

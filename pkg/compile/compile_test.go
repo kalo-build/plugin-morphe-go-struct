@@ -106,20 +106,35 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 	suite.FileExists(modelIDPath01)
 	suite.FileEquals(modelIDPath01, gtModelIDPath01)
 
-	modelPath1 := modelsDirPath + "/person.go"
-	gtModelPath1 := gtModelsDirPath + "/person.go"
+	modelPath1 := modelsDirPath + "/company.go"
+	gtModelPath1 := gtModelsDirPath + "/company.go"
 	suite.FileExists(modelPath1)
 	suite.FileEquals(modelPath1, gtModelPath1)
 
-	modelIDPath10 := modelsDirPath + "/person_id_name.go"
-	gtModelIDPath10 := gtModelsDirPath + "/person_id_name.go"
+	modelIDPath10 := modelsDirPath + "/company_id_name.go"
+	gtModelIDPath10 := gtModelsDirPath + "/company_id_name.go"
 	suite.FileExists(modelIDPath10)
 	suite.FileEquals(modelIDPath10, gtModelIDPath10)
 
-	modelIDPath11 := modelsDirPath + "/person_id_primary.go"
-	gtModelIDPath11 := gtModelsDirPath + "/person_id_primary.go"
+	modelIDPath11 := modelsDirPath + "/company_id_primary.go"
+	gtModelIDPath11 := gtModelsDirPath + "/company_id_primary.go"
 	suite.FileExists(modelIDPath11)
 	suite.FileEquals(modelIDPath11, gtModelIDPath11)
+
+	modelPath2 := modelsDirPath + "/person.go"
+	gtModelPath2 := gtModelsDirPath + "/person.go"
+	suite.FileExists(modelPath2)
+	suite.FileEquals(modelPath2, gtModelPath2)
+
+	modelIDPath20 := modelsDirPath + "/person_id_name.go"
+	gtModelIDPath20 := gtModelsDirPath + "/person_id_name.go"
+	suite.FileExists(modelIDPath20)
+	suite.FileEquals(modelIDPath20, gtModelIDPath20)
+
+	modelIDPath21 := modelsDirPath + "/person_id_primary.go"
+	gtModelIDPath21 := gtModelsDirPath + "/person_id_primary.go"
+	suite.FileExists(modelIDPath21)
+	suite.FileEquals(modelIDPath21, gtModelIDPath21)
 
 	enumsDirPath := workingDirPath + "/enums"
 	gtEnumsDirPath := suite.TestGroundTruthDirPath + "/enums"
