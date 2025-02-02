@@ -5,10 +5,14 @@ import (
 )
 
 type Person struct {
-	FirstName   string
-	ID          uint `mandatory`
-	LastName    string
-	Nationality enums.Nationality
+	FirstName     string
+	ID            uint `mandatory`
+	LastName      string
+	Nationality   enums.Nationality
+	CompanyID     uint
+	Company       *Company
+	ContactInfoID uint
+	ContactInfo   *ContactInfo
 }
 
 func (m Person) GetIDName() PersonIDName {

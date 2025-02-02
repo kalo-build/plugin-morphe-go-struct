@@ -10,6 +10,7 @@ import (
 	"github.com/kaloseia/go/pkg/godef"
 	"github.com/kaloseia/morphe-go/pkg/registry"
 	"github.com/kaloseia/morphe-go/pkg/yaml"
+	"github.com/kaloseia/morphe-go/pkg/yamlops"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
@@ -90,17 +91,21 @@ func morpheModelToGoStructs(config MorpheCompileConfig, r *registry.Registry, mo
 }
 
 func getModelStruct(config MorpheCompileConfig, r *registry.Registry, model yaml.Model) (*godef.Struct, error) {
+	if r == nil {
+		return nil, ErrNoRegistry
+	}
+
 	modelStruct := godef.Struct{
 		Package: config.MorpheModelsConfig.Package,
 		Name:    model.Name,
 	}
-	structFields, fieldsErr := getGoFieldsForMorpheModel(config.MorpheEnumsConfig.Package, r.GetAllEnums(), model.Fields)
+	structFields, fieldsErr := getGoFieldsForMorpheModel(config.MorpheEnumsConfig.Package, r, model)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
 	modelStruct.Fields = structFields
 
-	structImports, importsErr := getImportsForStructFields(structFields)
+	structImports, importsErr := getImportsForStructFields(config.MorpheModelsConfig.Package, structFields)
 	if importsErr != nil {
 		return nil, importsErr
 	}
@@ -109,7 +114,22 @@ func getModelStruct(config MorpheCompileConfig, r *registry.Registry, model yaml
 	return &modelStruct, nil
 }
 
-func getGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[string]yaml.Enum, modelFields map[string]yaml.ModelField) ([]godef.StructField, error) {
+func getGoFieldsForMorpheModel(enumPackage godef.Package, r *registry.Registry, model yaml.Model) ([]godef.StructField, error) {
+	allFields, fieldErr := getDirectGoFieldsForMorpheModel(enumPackage, r.GetAllEnums(), model.Fields)
+	if fieldErr != nil {
+		return nil, fieldErr
+	}
+
+	allRelatedFields, relatedErr := getRelatedGoFieldsForMorpheModel(r, model.Related)
+	if relatedErr != nil {
+		return nil, relatedErr
+	}
+
+	allFields = append(allFields, allRelatedFields...)
+	return allFields, nil
+}
+
+func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[string]yaml.Enum, modelFields map[string]yaml.ModelField) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allFieldNames := core.MapKeysSorted(modelFields)
@@ -135,6 +155,96 @@ func getGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[string]ya
 		allFields = append(allFields, goField)
 	}
 	return allFields, nil
+}
+
+func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[string]yaml.ModelRelation) ([]godef.StructField, error) {
+	allFields := []godef.StructField{}
+
+	allRelatedModelNames := core.MapKeysSorted(modelRelations)
+	for _, relatedModelName := range allRelatedModelNames {
+		relationDef := modelRelations[relatedModelName]
+		relatedModelDef, relatedModelDefErr := r.GetModel(relatedModelName)
+		if relatedModelDefErr != nil {
+			return nil, relatedModelDefErr
+		}
+
+		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName, relatedModelDef, relationDef.Type)
+		if goIDErr != nil {
+			return nil, goIDErr
+		}
+		allFields = append(allFields, goIDField)
+
+		goRelatedField := getRelatedGoFieldForMorpheModel(relatedModelName, relationDef.Type)
+		allFields = append(allFields, goRelatedField)
+	}
+	return allFields, nil
+}
+
+func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedModelDef yaml.Model, relationType string) (godef.StructField, error) {
+	relatedPrimaryIDFieldName, relatedIDFieldNameErr := yamlops.GetModelPrimaryIdentifierFieldName(relatedModelDef)
+	if relatedIDFieldNameErr != nil {
+		return godef.StructField{}, fmt.Errorf("related %w", relatedIDFieldNameErr)
+	}
+
+	idFieldName := fmt.Sprintf("%s%s", relatedModelName, relatedPrimaryIDFieldName)
+	if yamlops.IsRelationMany(relationType) {
+		idFieldName += "s"
+	}
+
+	relatedPrimaryIDFieldDef, relatedIDFieldDefErr := yamlops.GetModelFieldDefinitionByName(relatedModelDef, relatedPrimaryIDFieldName)
+	if relatedIDFieldDefErr != nil {
+		return godef.StructField{}, fmt.Errorf("related %w (primary identifier)", relatedIDFieldDefErr)
+	}
+
+	idFieldType, typeSupported := typemap.MorpheFieldToGoField[relatedPrimaryIDFieldDef.Type]
+	if !typeSupported {
+		return godef.StructField{}, ErrUnsupportedMorpheFieldType(relatedPrimaryIDFieldDef.Type)
+	}
+
+	if yamlops.IsRelationMany(relationType) {
+		return godef.StructField{
+			Name: idFieldName,
+			Type: godef.GoTypeArray{
+				IsSlice:   true,
+				ValueType: idFieldType,
+			},
+		}, nil
+	}
+
+	return godef.StructField{
+		Name: idFieldName,
+		Type: idFieldType,
+	}, nil
+}
+
+func getRelatedGoFieldForMorpheModel(relatedModelName string, relationType string) godef.StructField {
+	fieldName := relatedModelName
+	if yamlops.IsRelationMany(relationType) {
+		fieldName += "s"
+	}
+
+	valueType := godef.GoTypeStruct{
+		Name: relatedModelName,
+	}
+
+	if yamlops.IsRelationMany(relationType) {
+		return godef.StructField{
+			Name: fieldName,
+			Type: godef.GoTypeArray{
+				IsSlice: true,
+				ValueType: godef.GoTypePointer{
+					ValueType: valueType,
+				},
+			},
+		}
+	}
+
+	return godef.StructField{
+		Name: fieldName,
+		Type: godef.GoTypePointer{
+			ValueType: valueType,
+		},
+	}
 }
 
 func getEnumFieldAsStructFieldType(enumPackage godef.Package, allEnums map[string]yaml.Enum, fieldName string, enumName string) godef.StructField {
@@ -182,7 +292,7 @@ func getIdentifierStructFieldSubset(modelStruct godef.Struct, identifierName str
 }
 
 func getIdentifierStruct(structPackage godef.Package, modelName string, identifierName string, allIdentFieldDefs []godef.StructField) (*godef.Struct, error) {
-	identifierStructImports, identifierImportsErr := getImportsForStructFields(allIdentFieldDefs)
+	identifierStructImports, identifierImportsErr := getImportsForStructFields(structPackage, allIdentFieldDefs)
 	if identifierImportsErr != nil {
 		return nil, identifierImportsErr
 	}
@@ -230,17 +340,23 @@ func getModelIdentifierGetterBodyLines(identStruct *godef.Struct, receiverName s
 	return bodyLines
 }
 
-func getImportsForStructFields(allFields []godef.StructField) ([]string, error) {
+func getImportsForStructFields(structPackage godef.Package, allFields []godef.StructField) ([]string, error) {
 	structImportMap := map[string]any{}
 	for _, fieldDef := range allFields {
 		allFieldImports := fieldDef.Type.GetImports()
 		for _, fieldImport := range allFieldImports {
+			if fieldImport == "" || fieldImport == structPackage.Path {
+				continue
+			}
 			structImportMap[fieldImport] = nil
 		}
 	}
 
 	allStructImports := []string{}
 	for importPath := range structImportMap {
+		if importPath == "" || importPath == structPackage.Path {
+			continue
+		}
 		allStructImports = append(allStructImports, importPath)
 	}
 	sort.Strings(allStructImports)
