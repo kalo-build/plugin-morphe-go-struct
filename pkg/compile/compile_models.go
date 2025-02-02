@@ -162,30 +162,35 @@ func getRelatedGoFieldsForMorpheModel(modelPackage godef.Package, r *registry.Re
 
 	allRelatedModelNames := core.MapKeysSorted(modelRelations)
 	for _, relatedModelName := range allRelatedModelNames {
+		relationDef := modelRelations[relatedModelName]
 		relatedModelDef, relatedModelDefErr := r.GetModel(relatedModelName)
 		if relatedModelDefErr != nil {
 			return nil, relatedModelDefErr
 		}
 
-		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName, relatedModelDef)
+		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName, relatedModelDef, relationDef.Type)
 		if goIDErr != nil {
 			return nil, goIDErr
 		}
 		allFields = append(allFields, goIDField)
 
-		goRelatedField := getRelatedGoFieldForMorpheModel(modelPackage.Path, relatedModelName)
+		goRelatedField := getRelatedGoFieldForMorpheModel(modelPackage.Path, relatedModelName, relationDef.Type)
 		allFields = append(allFields, goRelatedField)
 	}
 	return allFields, nil
 }
 
-func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedModelDef yaml.Model) (godef.StructField, error) {
+func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedModelDef yaml.Model, relationType string) (godef.StructField, error) {
 	relatedPrimaryIDFieldName, relatedIDFieldNameErr := yamlops.GetModelPrimaryIdentifierFieldName(relatedModelDef)
 	if relatedIDFieldNameErr != nil {
 		return godef.StructField{}, fmt.Errorf("related %w", relatedIDFieldNameErr)
 	}
 
 	idFieldName := fmt.Sprintf("%s%s", relatedModelName, relatedPrimaryIDFieldName)
+	if yamlops.IsRelationMany(relationType) {
+		idFieldName += "s"
+	}
+
 	relatedPrimaryIDFieldDef, relatedIDFieldDefErr := yamlops.GetModelFieldDefinitionByName(relatedModelDef, relatedPrimaryIDFieldName)
 	if relatedIDFieldDefErr != nil {
 		return godef.StructField{}, fmt.Errorf("related %w (primary identifier)", relatedIDFieldDefErr)
@@ -196,20 +201,47 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedMo
 		return godef.StructField{}, ErrUnsupportedMorpheFieldType(relatedPrimaryIDFieldDef.Type)
 	}
 
+	if yamlops.IsRelationMany(relationType) {
+		return godef.StructField{
+			Name: idFieldName,
+			Type: godef.GoTypeArray{
+				ValueType: idFieldType,
+			},
+		}, nil
+	}
+
 	return godef.StructField{
 		Name: idFieldName,
 		Type: idFieldType,
 	}, nil
 }
 
-func getRelatedGoFieldForMorpheModel(modelPackagePath string, relatedModelName string) godef.StructField {
-	return godef.StructField{
-		Name: relatedModelName,
-		Type: godef.GoTypePointer{
-			ValueType: godef.GoTypeStruct{
-				PackagePath: modelPackagePath,
-				Name:        relatedModelName,
+func getRelatedGoFieldForMorpheModel(modelPackagePath string, relatedModelName string, relationType string) godef.StructField {
+	fieldName := relatedModelName
+	if yamlops.IsRelationMany(relationType) {
+		fieldName += "s"
+	}
+
+	valueType := godef.GoTypeStruct{
+		PackagePath: modelPackagePath,
+		Name:        relatedModelName,
+	}
+
+	if yamlops.IsRelationMany(relationType) {
+		return godef.StructField{
+			Name: fieldName,
+			Type: godef.GoTypeArray{
+				ValueType: godef.GoTypePointer{
+					ValueType: valueType,
+				},
 			},
+		}
+	}
+
+	return godef.StructField{
+		Name: fieldName,
+		Type: godef.GoTypePointer{
+			ValueType: valueType,
 		},
 	}
 }

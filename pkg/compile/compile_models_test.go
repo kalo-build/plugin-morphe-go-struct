@@ -1259,3 +1259,363 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne()
 	suite.Equal(idPrimaryField.Type, godef.GoTypeUint)
 }
 
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
+	}
+
+	model0 := yaml.Model{
+		Name: "Basic",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"String": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"ID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"BasicParent": {
+				Type: "ForMany",
+			},
+		},
+	}
+	model1 := yaml.Model{
+		Name: "BasicParent",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"String": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"ID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Basic": {
+				Type: "HasMany",
+			},
+		},
+	}
+	r := registry.NewRegistry()
+	r.SetModel("Basic", model0)
+	r.SetModel("BasicParent", model1)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Name, "Basic")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	structFields00 := structFields0[0]
+	suite.Equal(structFields00.Name, "ID")
+	suite.Equal(structFields00.Type, godef.GoTypeUint)
+	suite.Len(structFields00.Tags, 0)
+
+	structFields01 := structFields0[1]
+	suite.Equal(structFields01.Name, "String")
+	suite.Equal(structFields01.Type, godef.GoTypeString)
+	suite.Len(structFields01.Tags, 0)
+
+	structFields02 := structFields0[2]
+	suite.Equal(structFields02.Name, "BasicParentIDs")
+	suite.Equal(structFields02.Type, godef.GoTypeArray{
+		ValueType: godef.GoTypeUint,
+	})
+	suite.Len(structFields02.Tags, 0)
+
+	structFields03 := structFields0[3]
+	suite.Equal(structFields03.Name, "BasicParents")
+	suite.Equal(structFields03.Type, godef.GoTypeArray{
+		ValueType: godef.GoTypePointer{
+			ValueType: godef.GoTypeStruct{
+				PackagePath: modelsConfig.Package.Path,
+				Name:        "BasicParent",
+			},
+		},
+	})
+	suite.Len(structFields03.Tags, 0)
+
+	goStruct1 := allGoStructs[1]
+	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Name, "BasicIDPrimary")
+
+	structFields1 := goStruct1.Fields
+	suite.Len(structFields1, 1)
+
+	structFields10 := structFields1[0]
+	suite.Equal(structFields10.Name, "ID")
+	suite.Equal(structFields10.Type, godef.GoTypeUint)
+	suite.Len(structFields10.Tags, 0)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
+	}
+
+	model0 := yaml.Model{
+		Name: "BasicParent",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"String": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"ID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Basic": {
+				Type: "HasOne",
+			},
+		},
+	}
+
+	model1 := yaml.Model{
+		Name: "Basic",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"String": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"ID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"BasicParent": {
+				Type: "ForOne",
+			},
+		},
+	}
+	r := registry.NewRegistry()
+	r.SetModel("BasicParent", model0)
+	r.SetModel("Basic", model1)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Name, "BasicParent")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	structFields00 := structFields0[0]
+	suite.Equal(structFields00.Name, "ID")
+	suite.Equal(structFields00.Type, godef.GoTypeUint)
+	suite.Len(structFields00.Tags, 0)
+
+	structFields01 := structFields0[1]
+	suite.Equal(structFields01.Name, "String")
+	suite.Equal(structFields01.Type, godef.GoTypeString)
+	suite.Len(structFields01.Tags, 0)
+
+	structFields02 := structFields0[2]
+	suite.Equal(structFields02.Name, "BasicID")
+	suite.Equal(structFields02.Type, godef.GoTypeUint)
+	suite.Len(structFields02.Tags, 0)
+
+	structFields03 := structFields0[3]
+	suite.Equal(structFields03.Name, "Basic")
+	suite.Equal(structFields03.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{
+			PackagePath: modelsConfig.Package.Path,
+			Name:        "Basic",
+		},
+	})
+	suite.Len(structFields03.Tags, 0)
+
+	goStruct1 := allGoStructs[1]
+	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Name, "BasicParentIDPrimary")
+
+	structFields1 := goStruct1.Fields
+	suite.Len(structFields1, 1)
+
+	structFields10 := structFields1[0]
+	suite.Equal(structFields10.Name, "ID")
+	suite.Equal(structFields10.Type, godef.GoTypeUint)
+	suite.Len(structFields10.Tags, 0)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: modelsConfig,
+		},
+		ModelHooks: hook.CompileMorpheModel{},
+	}
+
+	model0 := yaml.Model{
+		Name: "BasicParent",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"String": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"ID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Basic": {
+				Type: "HasMany",
+			},
+		},
+	}
+	model1 := yaml.Model{
+		Name: "Basic",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"String": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {
+				Fields: []string{
+					"ID",
+				},
+			},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"BasicParent": {
+				Type: "ForOne",
+			},
+		},
+	}
+	r := registry.NewRegistry()
+	r.SetModel("BasicParent", model0)
+	r.SetModel("Basic", model1)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, model0)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Name, "BasicParent")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	structFields00 := structFields0[0]
+	suite.Equal(structFields00.Name, "ID")
+	suite.Equal(structFields00.Type, godef.GoTypeUint)
+	suite.Len(structFields00.Tags, 0)
+
+	structFields01 := structFields0[1]
+	suite.Equal(structFields01.Name, "String")
+	suite.Equal(structFields01.Type, godef.GoTypeString)
+	suite.Len(structFields01.Tags, 0)
+
+	structFields02 := structFields0[2]
+	suite.Equal(structFields02.Name, "BasicIDs")
+	suite.Equal(structFields02.Type, godef.GoTypeArray{
+		ValueType: godef.GoTypeUint,
+	})
+	suite.Len(structFields02.Tags, 0)
+
+	structFields03 := structFields0[3]
+	suite.Equal(structFields03.Name, "Basics")
+	suite.Equal(structFields03.Type, godef.GoTypeArray{
+		ValueType: godef.GoTypePointer{
+			ValueType: godef.GoTypeStruct{
+				PackagePath: modelsConfig.Package.Path,
+				Name:        "Basic",
+			},
+		},
+	})
+	suite.Len(structFields03.Tags, 0)
+
+	goStruct1 := allGoStructs[1]
+	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Name, "BasicParentIDPrimary")
+
+	structFields1 := goStruct1.Fields
+	suite.Len(structFields1, 1)
+
+	structFields10 := structFields1[0]
+	suite.Equal(structFields10.Name, "ID")
+	suite.Equal(structFields10.Type, godef.GoTypeUint)
+	suite.Len(structFields10.Tags, 0)
+}
+
