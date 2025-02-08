@@ -7,4 +7,4 @@ fields:
   ZipCode:
     type: String
   City:
-    type: String 
+    type: String
