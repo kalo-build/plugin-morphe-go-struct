@@ -27,5 +27,16 @@ func MorpheToGo(config MorpheCompileConfig) error {
 	if writeModelStructsErr != nil {
 		return writeModelStructsErr
 	}
+
+	allStructureStructDefs, compileAllErr := AllMorpheStructuresToGoStructs(config, r)
+	if compileAllErr != nil {
+		return compileAllErr
+	}
+
+	_, writeStructureStructsErr := WriteAllStructureStructDefinitions(config, allStructureStructDefs)
+	if writeStructureStructsErr != nil {
+		return writeStructureStructsErr
+	}
+
 	return nil
 }

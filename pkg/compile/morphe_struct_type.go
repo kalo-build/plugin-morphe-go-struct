@@ -3,6 +3,7 @@ package compile
 type MorpheStructType string
 
 const (
-	MorpheStructTypeModels   MorpheStructType = "model"
-	MorpheStructTypeEntities MorpheStructType = "entity"
+	MorpheStructTypeModels     MorpheStructType = "model"
+	MorpheStructTypeStructures MorpheStructType = "structure"
+	MorpheStructTypeEntities   MorpheStructType = "entity"
 )

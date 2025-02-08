@@ -65,6 +65,13 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 				},
 				ReceiverName: "m",
 			},
+			MorpheStructuresConfig: cfg.MorpheStructuresConfig{
+				Package: godef.Package{
+					Path: "github.com/kaloseia/dummy/structures",
+					Name: "structures",
+				},
+				ReceiverName: "s",
+			},
 			MorpheEnumsConfig: cfg.MorpheEnumsConfig{
 				Package: godef.Package{
 					Path: "github.com/kaloseia/dummy/enums",
@@ -76,6 +83,11 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 		ModelWriter: &compile.MorpheStructFileWriter{
 			Type:          compile.MorpheStructTypeModels,
 			TargetDirPath: workingDirPath + "/models",
+		},
+
+		StructureWriter: &compile.MorpheStructFileWriter{
+			Type:          compile.MorpheStructTypeStructures,
+			TargetDirPath: workingDirPath + "/structures",
 		},
 
 		EnumWriter: &compile.MorpheEnumFileWriter{
@@ -149,4 +161,13 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 	gtEnumPath1 := gtEnumsDirPath + "/universal_number.go"
 	suite.FileExists(enumPath1)
 	suite.FileEquals(enumPath1, gtEnumPath1)
+
+	structuresDirPath := workingDirPath + "/structures"
+	gtStructuresDirPath := suite.TestGroundTruthDirPath + "/structures"
+	suite.DirExists(structuresDirPath)
+
+	structurePath0 := structuresDirPath + "/address.go"
+	gtStructurePath0 := gtStructuresDirPath + "/address.go"
+	suite.FileExists(structurePath0)
+	suite.FileEquals(structurePath0, gtStructurePath0)
 }

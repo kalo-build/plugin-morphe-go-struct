@@ -8,8 +8,8 @@ import (
 	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/write"
 )
 
-func WriteAllModelStructDefinitions(config MorpheCompileConfig, allModelStructDefs map[string][]*godef.Struct) (CompiledModelStructs, error) {
-	allWrittenModels := CompiledModelStructs{}
+func WriteAllModelStructDefinitions(config MorpheCompileConfig, allModelStructDefs map[string][]*godef.Struct) (CompiledMorpheStructs, error) {
+	allWrittenModels := CompiledMorpheStructs{}
 
 	sortedModelNames := core.MapKeysSorted(allModelStructDefs)
 	for _, modelName := range sortedModelNames {
@@ -19,7 +19,7 @@ func WriteAllModelStructDefinitions(config MorpheCompileConfig, allModelStructDe
 			if writeErr != nil {
 				return nil, writeErr
 			}
-			allWrittenModels.AddCompiledModelStruct(modelName, modelStruct, modelStructContents)
+			allWrittenModels.AddCompiledMorpheStruct(modelName, modelStruct, modelStructContents)
 		}
 	}
 	return allWrittenModels, nil
