@@ -450,7 +450,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 			if featureFlag != "otherName" {
 				return config, model, nil
 			}
-			config.ReceiverName = "CHANGED"
+			config.MorpheModelsConfig.ReceiverName = "CHANGED"
 			model.Name = model.Name + "CHANGED"
 			delete(model.Fields, "Float")
 			return config, model, nil
@@ -1619,3 +1619,9 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	suite.Len(structFields10.Tags, 0)
 }
 
+// TODO: Overview:
+// + Enums compilation
+// + Model enum fields
+// + Related models
+// 4. Structures compilation
+// 5. Entities compilation
