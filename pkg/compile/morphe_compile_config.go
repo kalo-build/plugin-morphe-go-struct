@@ -17,6 +17,9 @@ type MorpheCompileConfig struct {
 	ModelWriter write.GoStructWriter
 	ModelHooks  hook.CompileMorpheModel
 
+	StructureWriter write.GoStructWriter
+	StructureHooks  hook.CompileMorpheStructure
+
 	EnumWriter write.GoEnumWriter
 	EnumHooks  hook.CompileMorpheEnum
 

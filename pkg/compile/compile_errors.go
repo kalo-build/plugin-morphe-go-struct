@@ -9,7 +9,7 @@ import (
 
 var ErrNoRegistry = errors.New("registry not initialized")
 
-func ErrUnsupportedMorpheFieldType(unsupportedType yaml.ModelFieldType) error {
+func ErrUnsupportedMorpheFieldType[TType yaml.ModelFieldType | yaml.StructureFieldType](unsupportedType TType) error {
 	return fmt.Errorf("unsupported morphe field type for go conversion: '%s'", unsupportedType)
 }
 

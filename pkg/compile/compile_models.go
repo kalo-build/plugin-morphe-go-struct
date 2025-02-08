@@ -142,7 +142,7 @@ func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[str
 			continue
 		}
 
-		goFieldType, typeSupported := typemap.MorpheFieldToGoField[fieldDef.Type]
+		goFieldType, typeSupported := typemap.MorpheModelFieldToGoField[fieldDef.Type]
 		if !typeSupported {
 			return nil, ErrUnsupportedMorpheFieldType(fieldDef.Type)
 		}
@@ -196,7 +196,7 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedMo
 		return godef.StructField{}, fmt.Errorf("related %w (primary identifier)", relatedIDFieldDefErr)
 	}
 
-	idFieldType, typeSupported := typemap.MorpheFieldToGoField[relatedPrimaryIDFieldDef.Type]
+	idFieldType, typeSupported := typemap.MorpheModelFieldToGoField[relatedPrimaryIDFieldDef.Type]
 	if !typeSupported {
 		return godef.StructField{}, ErrUnsupportedMorpheFieldType(relatedPrimaryIDFieldDef.Type)
 	}
