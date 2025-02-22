@@ -198,7 +198,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	structFields10 := structFields1[0]
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
-	suite.Len(structFields10.Tags, 0)
+	suite.Len(structFields10.Tags, 1)
+	suite.Equal(structFields10.Tags[0], "immutable")
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
@@ -621,7 +622,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 	structFields10 := structFields1[0]
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
-	suite.Len(structFields10.Tags, 0)
+	suite.Len(structFields10.Tags, 1)
+	suite.Equal(structFields10.Tags[0], "immutable")
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Failure() {
@@ -890,7 +892,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 	structFields10 := structFields1[0]
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
-	suite.Len(structFields10.Tags, 0)
+	suite.Len(structFields10.Tags, 1)
+	suite.Equal(structFields10.Tags[0], "immutable")
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Failure() {

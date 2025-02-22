@@ -1,5 +1,5 @@
 package models
 
 type PersonIDPrimary struct {
-	ID uint
+	ID uint `morphe:"mandatory"`
 }

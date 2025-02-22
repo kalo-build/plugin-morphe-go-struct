@@ -78,6 +78,13 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 					Name: "enums",
 				},
 			},
+			MorpheEntitiesConfig: cfg.MorpheEntitiesConfig{
+				Package: godef.Package{
+					Path: "github.com/kaloseia/dummy/entities",
+					Name: "entities",
+				},
+				ReceiverName: "e",
+			},
 		},
 
 		ModelWriter: &compile.MorpheStructFileWriter{
@@ -92,6 +99,11 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 
 		EnumWriter: &compile.MorpheEnumFileWriter{
 			TargetDirPath: workingDirPath + "/enums",
+		},
+
+		EntityWriter: &compile.MorpheStructFileWriter{
+			Type:          compile.MorpheStructTypeEntities,
+			TargetDirPath: workingDirPath + "/entities",
 		},
 	}
 
@@ -170,4 +182,28 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 	gtStructurePath0 := gtStructuresDirPath + "/address.go"
 	suite.FileExists(structurePath0)
 	suite.FileEquals(structurePath0, gtStructurePath0)
+
+	entitiesDirPath := workingDirPath + "/entities"
+	gtEntitiesDirPath := suite.TestGroundTruthDirPath + "/entities"
+	suite.DirExists(entitiesDirPath)
+
+	entityPath0 := entitiesDirPath + "/company.go"
+	gtEntityPath0 := gtEntitiesDirPath + "/company.go"
+	suite.FileExists(entityPath0)
+	suite.FileEquals(entityPath0, gtEntityPath0)
+
+	entityIDPath00 := entitiesDirPath + "/company_id_primary.go"
+	gtEntityIDPath00 := gtEntitiesDirPath + "/company_id_primary.go"
+	suite.FileExists(entityIDPath00)
+	suite.FileEquals(entityIDPath00, gtEntityIDPath00)
+
+	entityPath1 := entitiesDirPath + "/person.go"
+	gtEntityPath1 := gtEntitiesDirPath + "/person.go"
+	suite.FileExists(entityPath1)
+	suite.FileEquals(entityPath1, gtEntityPath1)
+
+	entityIDPath10 := entitiesDirPath + "/person_id_primary.go"
+	gtEntityIDPath10 := gtEntitiesDirPath + "/person_id_primary.go"
+	suite.FileExists(entityIDPath10)
+	suite.FileEquals(entityIDPath10, gtEntityIDPath10)
 }

@@ -38,5 +38,15 @@ func MorpheToGo(config MorpheCompileConfig) error {
 		return writeStructureStructsErr
 	}
 
+	allEntityStructDefs, compileAllErr := AllMorpheEntitiesToGoStructs(config, r)
+	if compileAllErr != nil {
+		return compileAllErr
+	}
+
+	_, writeEntityStructsErr := WriteAllEntityStructDefinitions(config, allEntityStructDefs)
+	if writeEntityStructsErr != nil {
+		return writeEntityStructsErr
+	}
+
 	return nil
 }

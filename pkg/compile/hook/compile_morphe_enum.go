@@ -7,7 +7,11 @@ import (
 )
 
 type CompileMorpheEnum struct {
-	OnCompileMorpheEnumStart   func(cfg.MorpheEnumsConfig, yaml.Enum) (cfg.MorpheEnumsConfig, yaml.Enum, error)
-	OnCompileMorpheEnumSuccess func(*godef.Enum) (*godef.Enum, error)
-	OnCompileMorpheEnumFailure func(cfg.MorpheEnumsConfig, yaml.Enum, error) error
+	OnCompileMorpheEnumStart   OnCompileMorpheEnumStartHook
+	OnCompileMorpheEnumSuccess OnCompileMorpheEnumSuccessHook
+	OnCompileMorpheEnumFailure OnCompileMorpheEnumFailureHook
 }
+
+type OnCompileMorpheEnumStartHook = func(config cfg.MorpheEnumsConfig, enum yaml.Enum) (cfg.MorpheEnumsConfig, yaml.Enum, error)
+type OnCompileMorpheEnumSuccessHook = func(enum *godef.Enum) (*godef.Enum, error)
+type OnCompileMorpheEnumFailureHook = func(config cfg.MorpheEnumsConfig, enum yaml.Enum, compileFailure error) error
