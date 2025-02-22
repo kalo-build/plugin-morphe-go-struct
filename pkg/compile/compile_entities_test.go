@@ -805,15 +805,13 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOn
 
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "BasicParentID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "BasicParent")
 	suite.Equal(field03.Type, godef.GoTypePointer{
 		ValueType: godef.GoTypeStruct{
-			PackagePath: entitiesConfig.Package.Path,
+			PackagePath: "",
 			Name:        "BasicParent",
 		},
 	})
@@ -994,9 +992,11 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForMa
 	suite.Equal(field03.Name, "BasicParents")
 	suite.Equal(field03.Type, godef.GoTypeArray{
 		IsSlice: true,
-		ValueType: godef.GoTypeStruct{
-			PackagePath: entitiesConfig.Package.Path,
-			Name:        "BasicParent",
+		ValueType: godef.GoTypePointer{
+			ValueType: godef.GoTypeStruct{
+				PackagePath: "",
+				Name:        "BasicParent",
+			},
 		},
 	})
 
@@ -1167,15 +1167,13 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOn
 
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "BasicID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "Basic")
 	suite.Equal(field03.Type, godef.GoTypePointer{
 		ValueType: godef.GoTypeStruct{
-			PackagePath: entitiesConfig.Package.Path,
+			PackagePath: "",
 			Name:        "Basic",
 		},
 	})
@@ -1356,9 +1354,11 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasMa
 	suite.Equal(field03.Name, "Basics")
 	suite.Equal(field03.Type, godef.GoTypeArray{
 		IsSlice: true,
-		ValueType: godef.GoTypeStruct{
-			PackagePath: entitiesConfig.Package.Path,
-			Name:        "Basic",
+		ValueType: godef.GoTypePointer{
+			ValueType: godef.GoTypeStruct{
+				PackagePath: "",
+				Name:        "Basic",
+			},
 		},
 	})
 
