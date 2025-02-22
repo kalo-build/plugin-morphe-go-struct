@@ -21,13 +21,7 @@ func TestCompileModelsTestSuite(t *testing.T) {
 	suite.Run(t, new(CompileModelsTestSuite))
 }
 
-func (suite *CompileModelsTestSuite) SetupTest() {
-}
-
-func (suite *CompileModelsTestSuite) TearDownTest() {
-}
-
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
+func (suite *CompileModelsTestSuite) getMorpheConfig() cfg.MorpheConfig {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
 			Path: "github.com/kaloseia/project/domain/models",
@@ -35,12 +29,56 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 		},
 		ReceiverName: "m",
 	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/structures",
+			Name: "structures",
 		},
-		ModelHooks: hook.CompileMorpheModel{},
+		ReceiverName: "s",
 	}
+	enumsConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kaloseia/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	return cfg.MorpheConfig{
+		MorpheEntitiesConfig:   entitiesConfig,
+		MorpheModelsConfig:     modelsConfig,
+		MorpheStructuresConfig: structuresConfig,
+		MorpheEnumsConfig:      enumsConfig,
+	}
+}
+
+func (suite *CompileModelsTestSuite) getCompileConfig() compile.MorpheCompileConfig {
+	morpheConfig := suite.getMorpheConfig()
+	return compile.MorpheCompileConfig{
+		MorpheConfig: morpheConfig,
+		ModelHooks:   hook.CompileMorpheModel{},
+	}
+}
+
+func (suite *CompileModelsTestSuite) getCompileConfigWithHooks(hooks hook.CompileMorpheModel) compile.MorpheCompileConfig {
+	config := suite.getCompileConfig()
+	config.ModelHooks = hooks
+	return config
+}
+
+func (suite *CompileModelsTestSuite) SetupTest() {
+}
+
+func (suite *CompileModelsTestSuite) TearDownTest() {
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -98,8 +136,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	goStruct0 := allGoStructs[0]
 
-	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 
 	structImports0 := goStruct0.Imports
 	suite.Len(structImports0, 1)
@@ -161,15 +199,15 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	suite.Equal(structFields09.Name, "UUID")
 	suite.Equal(structFields09.Type, godef.GoTypeString)
 	suite.Len(structFields09.Tags, 1)
-	suite.Equal(structFields09.Tags[0], "immutable")
+	suite.Equal(structFields09.Tags[0], "morphe:\"immutable\"")
 
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
-	basicType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "Basic"}
-	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicIDPrimary"}
+	basicType := godef.GoTypeStruct{PackagePath: config.MorpheConfig.MorpheModelsConfig.Package.Path, Name: "Basic"}
+	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: config.MorpheConfig.MorpheModelsConfig.Package.Path, Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
-	suite.Equal(structMethods00.ReceiverName, modelsConfig.ReceiverName)
+	suite.Equal(structMethods00.ReceiverName, config.MorpheConfig.MorpheModelsConfig.ReceiverName)
 	suite.Equal(structMethods00.ReceiverType, basicType)
 	suite.Equal(structMethods00.Name, "GetIDPrimary")
 	suite.Nil(structMethods00.Parameters)
@@ -184,8 +222,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 
 	goStruct1 := allGoStructs[1]
 
-	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 
 	structImports1 := goStruct1.Imports
 	suite.Len(structImports1, 0)
@@ -199,7 +237,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs() {
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
 	suite.Len(structFields10.Tags, 1)
-	suite.Equal(structFields10.Tags[0], "immutable")
+	suite.Equal(structFields10.Tags[0], "morphe:\"immutable\"")
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() {
@@ -329,19 +367,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "",
@@ -371,19 +397,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoModelName() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name:   "Basic",
@@ -409,19 +423,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoFields() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoIdentifiers() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -457,19 +459,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 			return config, model, nil
 		},
 	}
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: modelHooks,
-	}
+	config := suite.getCompileConfigWithHooks(modelHooks)
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -527,8 +517,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 
 	goStruct0 := allGoStructs[0]
 
-	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 
 	structImports0 := goStruct0.Imports
 	suite.Len(structImports0, 1)
@@ -585,13 +575,13 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 	suite.Equal(structFields09.Name, "UUID")
 	suite.Equal(structFields09.Type, godef.GoTypeString)
 	suite.Len(structFields09.Tags, 1)
-	suite.Equal(structFields09.Tags[0], "immutable")
+	suite.Equal(structFields09.Tags[0], "morphe:\"immutable\"")
 
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
-	basicType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicCHANGED"}
-	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicCHANGEDIDPrimary"}
+	basicType := godef.GoTypeStruct{PackagePath: config.MorpheConfig.MorpheModelsConfig.Package.Path, Name: "BasicCHANGED"}
+	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: config.MorpheConfig.MorpheModelsConfig.Package.Path, Name: "BasicCHANGEDIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, "CHANGED")
 	suite.Equal(structMethods00.ReceiverType, basicType)
@@ -608,8 +598,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 
 	goStruct1 := allGoStructs[1]
 
-	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 
 	structImports1 := goStruct1.Imports
 	suite.Len(structImports1, 0)
@@ -623,7 +613,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Succes
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
 	suite.Len(structFields10.Tags, 1)
-	suite.Equal(structFields10.Tags[0], "immutable")
+	suite.Equal(structFields10.Tags[0], "morphe:\"immutable\"")
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Failure() {
@@ -636,19 +626,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_StartHook_Failur
 			return config, model, fmt.Errorf("compile model start hook error")
 		},
 	}
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: modelHooks,
-	}
+	config := suite.getCompileConfigWithHooks(modelHooks)
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -727,19 +705,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 			return allModelStructs, nil
 		},
 	}
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: modelHooks,
-	}
+	config := suite.getCompileConfigWithHooks(modelHooks)
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -797,8 +763,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 
 	goStruct0 := allGoStructs[0]
 
-	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 
 	structImports0 := goStruct0.Imports
 	suite.Len(structImports0, 1)
@@ -855,13 +821,13 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 	suite.Equal(structFields09.Name, "UUID")
 	suite.Equal(structFields09.Type, godef.GoTypeString)
 	suite.Len(structFields09.Tags, 1)
-	suite.Equal(structFields09.Tags[0], "immutable")
+	suite.Equal(structFields09.Tags[0], "morphe:\"immutable\"")
 
 	structMethods0 := goStruct0.Methods
 	suite.Len(structMethods0, 1)
 
-	basicType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "Basic"}
-	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: modelsConfig.Package.Path, Name: "BasicIDPrimary"}
+	basicType := godef.GoTypeStruct{PackagePath: config.MorpheConfig.MorpheModelsConfig.Package.Path, Name: "Basic"}
+	basicIDPrimaryType := godef.GoTypeStruct{PackagePath: config.MorpheConfig.MorpheModelsConfig.Package.Path, Name: "BasicIDPrimary"}
 	structMethods00 := structMethods0[0]
 	suite.Equal(structMethods00.ReceiverName, "GetIDPrimary")
 	suite.Equal(structMethods00.ReceiverType, basicType)
@@ -878,8 +844,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 
 	goStruct1 := allGoStructs[1]
 
-	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 
 	structImports1 := goStruct1.Imports
 	suite.Len(structImports1, 0)
@@ -893,7 +859,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Succ
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
 	suite.Len(structFields10.Tags, 1)
-	suite.Equal(structFields10.Tags[0], "immutable")
+	suite.Equal(structFields10.Tags[0], "morphe:\"immutable\"")
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Failure() {
@@ -906,19 +872,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_SuccessHook_Fail
 			return nil, fmt.Errorf("compile model success hook error")
 		},
 	}
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: modelHooks,
-	}
+	config := suite.getCompileConfigWithHooks(modelHooks)
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -982,19 +936,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_FailureHook_NoPa
 			return fmt.Errorf("Model %s: %w", model.Name, compileFailure)
 		},
 	}
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: modelHooks,
-	}
+	config := suite.getCompileConfigWithHooks(modelHooks)
+	config.MorpheConfig.MorpheModelsConfig.Package.Path = ""
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -1053,29 +996,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_FailureHook_NoPa
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_EnumField() {
-	modelHooks := hook.CompileMorpheModel{}
-
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-
-	enumsConfig := cfg.MorpheEnumsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
-			Name: "enums",
-		},
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-			MorpheEnumsConfig:  enumsConfig,
-		},
-		ModelHooks: modelHooks,
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -1134,7 +1055,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_EnumField() {
 	field01 := fields0[1]
 	suite.Equal(field01.Name, "Nationality")
 	suite.Equal(field01.Type, godef.GoTypeDerived{
-		PackagePath: enumsConfig.Package.Path,
+		PackagePath: config.MorpheConfig.MorpheEnumsConfig.Package.Path,
 		Name:        "Nationality",
 		BaseType:    godef.GoTypeString,
 	})
@@ -1155,19 +1076,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_EnumField() {
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -1225,6 +1134,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne()
 	suite.Len(allGoStructs, 2)
 
 	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct0.Name, "Basic")
 
 	structFields0 := goStruct0.Fields
@@ -1251,6 +1162,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne()
 	})
 
 	goStruct1 := allGoStructs[1]
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct1.Name, "BasicIDPrimary")
 
 	structFields1 := goStruct1.Fields
@@ -1262,19 +1175,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "Basic",
@@ -1332,8 +1233,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany(
 	suite.Len(allGoStructs, 2)
 
 	goStruct0 := allGoStructs[0]
-	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct0.Name, "Basic")
 
 	structFields0 := goStruct0.Fields
@@ -1370,8 +1271,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany(
 	suite.Len(structFields03.Tags, 0)
 
 	goStruct1 := allGoStructs[1]
-	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct1.Name, "BasicIDPrimary")
 
 	structFields1 := goStruct1.Fields
@@ -1384,19 +1285,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForMany(
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "BasicParent",
@@ -1455,8 +1344,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne()
 	suite.Len(allGoStructs, 2)
 
 	goStruct0 := allGoStructs[0]
-	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct0.Name, "BasicParent")
 
 	structFields0 := goStruct0.Fields
@@ -1487,8 +1376,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne()
 	suite.Len(structFields03.Tags, 0)
 
 	goStruct1 := allGoStructs[1]
-	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct1.Name, "BasicParentIDPrimary")
 
 	structFields1 := goStruct1.Fields
@@ -1501,19 +1390,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne()
 }
 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany() {
-	modelsConfig := cfg.MorpheModelsConfig{
-		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
-			Name: "models",
-		},
-		ReceiverName: "m",
-	}
-	config := compile.MorpheCompileConfig{
-		MorpheConfig: cfg.MorpheConfig{
-			MorpheModelsConfig: modelsConfig,
-		},
-		ModelHooks: hook.CompileMorpheModel{},
-	}
+	config := suite.getCompileConfig()
 
 	model0 := yaml.Model{
 		Name: "BasicParent",
@@ -1571,8 +1448,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	suite.Len(allGoStructs, 2)
 
 	goStruct0 := allGoStructs[0]
-	suite.Equal(goStruct0.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct0.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct0.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct0.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct0.Name, "BasicParent")
 
 	structFields0 := goStruct0.Fields
@@ -1609,8 +1486,8 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	suite.Len(structFields03.Tags, 0)
 
 	goStruct1 := allGoStructs[1]
-	suite.Equal(goStruct1.Package.Path, modelsConfig.Package.Path)
-	suite.Equal(goStruct1.Package.Name, modelsConfig.Package.Name)
+	suite.Equal(goStruct1.Package.Path, config.MorpheConfig.MorpheModelsConfig.Package.Path)
+	suite.Equal(goStruct1.Package.Name, config.MorpheConfig.MorpheModelsConfig.Package.Name)
 	suite.Equal(goStruct1.Name, "BasicParentIDPrimary")
 
 	structFields1 := goStruct1.Fields
@@ -1621,10 +1498,3 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	suite.Equal(structFields10.Type, godef.GoTypeUint)
 	suite.Len(structFields10.Tags, 0)
 }
-
-// TODO: Overview:
-// + Enums compilation
-// + Model enum fields
-// + Related models
-// 4. Structures compilation
-// 5. Entities compilation
