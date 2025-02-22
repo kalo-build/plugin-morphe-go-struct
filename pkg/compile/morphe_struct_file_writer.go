@@ -83,20 +83,18 @@ func (w *MorpheStructFileWriter) getAllStructImportLines(structDefinition *godef
 }
 
 func (w *MorpheStructFileWriter) getAllStructTypeLines(structDefinition *godef.Struct) ([]string, error) {
-
 	allTypeLines := []string{
 		fmt.Sprintf("type %s struct {", structDefinition.Name),
 	}
 
 	for _, structField := range structDefinition.Fields {
 		structFieldTypeSyntax := structField.Type.GetSyntax()
-		structFieldTags := strings.Join(structField.Tags, " ")
-		if structFieldTags == "" {
+		if len(structField.Tags) == 0 {
 			structFieldLine := fmt.Sprintf("\t%s %s", structField.Name, structFieldTypeSyntax)
 			allTypeLines = append(allTypeLines, structFieldLine)
 			continue
 		}
-		structFieldLine := fmt.Sprintf("\t%s %s `%s`", structField.Name, structFieldTypeSyntax, structFieldTags)
+		structFieldLine := fmt.Sprintf("\t%s %s `%s`", structField.Name, structFieldTypeSyntax, strings.Join(structField.Tags, " "))
 		allTypeLines = append(allTypeLines, structFieldLine)
 	}
 

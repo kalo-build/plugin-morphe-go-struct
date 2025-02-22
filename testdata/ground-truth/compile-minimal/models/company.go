@@ -1,7 +1,7 @@
 package models
 
 type Company struct {
-	ID        uint `mandatory`
+	ID        uint `morphe:"mandatory"`
 	Name      string
 	TaxID     string
 	PersonIDs []uint

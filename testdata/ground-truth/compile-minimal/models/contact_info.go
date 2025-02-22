@@ -2,7 +2,7 @@ package models
 
 type ContactInfo struct {
 	Email    string
-	ID       uint `mandatory`
+	ID       uint `morphe:"mandatory"`
 	PersonID uint
 	Person   *Person
 }

@@ -6,7 +6,7 @@ import (
 
 type Person struct {
 	FirstName     string
-	ID            uint `mandatory`
+	ID            uint `morphe:"mandatory"`
 	LastName      string
 	Nationality   enums.Nationality
 	CompanyID     uint

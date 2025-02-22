@@ -1,5 +1,5 @@
 package models
 
 type CompanyIDPrimary struct {
-	ID uint
+	ID uint `morphe:"mandatory"`
 }

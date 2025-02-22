@@ -20,6 +20,9 @@ type MorpheCompileConfig struct {
 	StructureWriter write.GoStructWriter
 	StructureHooks  hook.CompileMorpheStructure
 
+	EntityWriter write.GoStructWriter
+	EntityHooks  hook.CompileMorpheEntity
+
 	EnumWriter write.GoEnumWriter
 	EnumHooks  hook.CompileMorpheEnum
 

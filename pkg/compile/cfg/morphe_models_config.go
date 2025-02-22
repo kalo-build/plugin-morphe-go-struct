@@ -25,3 +25,11 @@ func (config MorpheModelsConfig) Validate() error {
 	}
 	return nil
 }
+
+func (config MorpheModelsConfig) GetPackage() godef.Package {
+	return config.Package
+}
+
+func (config MorpheModelsConfig) GetReceiverName() string {
+	return config.ReceiverName
+}
