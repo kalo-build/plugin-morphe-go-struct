@@ -9,9 +9,9 @@ type Person struct {
 	ID            uint `morphe:"mandatory"`
 	LastName      string
 	Nationality   enums.Nationality
-	CompanyID     uint
+	CompanyID     *uint
 	Company       *Company
-	ContactInfoID uint
+	ContactInfoID *uint
 	ContactInfo   *ContactInfo
 }
 

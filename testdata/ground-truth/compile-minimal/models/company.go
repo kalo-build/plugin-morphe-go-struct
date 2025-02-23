@@ -5,7 +5,7 @@ type Company struct {
 	Name      string
 	TaxID     string
 	PersonIDs []uint
-	Persons   []*Person
+	Persons   []Person
 }
 
 func (m Company) GetIDName() CompanyIDName {
