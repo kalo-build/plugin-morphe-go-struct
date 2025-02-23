@@ -9,7 +9,7 @@ type Person struct {
 	ID          uint
 	LastName    string
 	Nationality enums.Nationality
-	CompanyID   uint
+	CompanyID   *uint
 	Company     *Company
 }
 

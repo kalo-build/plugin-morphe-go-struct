@@ -191,7 +191,9 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 
 	return godef.StructField{
 		Name: fieldName,
-		Type: fieldType,
+		Type: godef.GoTypePointer{
+			ValueType: fieldType,
+		},
 	}, nil
 }
 
@@ -210,10 +212,8 @@ func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, r
 		fieldName += "s"
 		fieldType = godef.GoTypeArray{
 			IsSlice: true,
-			ValueType: godef.GoTypePointer{
-				ValueType: godef.GoTypeStruct{
-					Name: targetEntity.Name,
-				},
+			ValueType: godef.GoTypeStruct{
+				Name: targetEntity.Name,
 			},
 		}
 	default:

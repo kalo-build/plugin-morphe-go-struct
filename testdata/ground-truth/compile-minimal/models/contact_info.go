@@ -3,7 +3,7 @@ package models
 type ContactInfo struct {
 	Email    string
 	ID       uint `morphe:"mandatory"`
-	PersonID uint
+	PersonID *uint
 	Person   *Person
 }
 

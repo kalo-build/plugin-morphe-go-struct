@@ -201,7 +201,9 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedMo
 
 	return godef.StructField{
 		Name: idFieldName,
-		Type: idFieldType,
+		Type: godef.GoTypePointer{
+			ValueType: idFieldType,
+		},
 	}, nil
 }
 
@@ -219,10 +221,8 @@ func getRelatedGoFieldForMorpheModel(relatedModelName string, relationType strin
 		return godef.StructField{
 			Name: fieldName,
 			Type: godef.GoTypeArray{
-				IsSlice: true,
-				ValueType: godef.GoTypePointer{
-					ValueType: valueType,
-				},
+				IsSlice:   true,
+				ValueType: valueType,
 			},
 		}
 	}
