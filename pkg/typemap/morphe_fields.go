@@ -1,9 +1,9 @@
 package typemap
 
 import (
-	"github.com/kaloseia/morphe-go/pkg/yaml"
+	"github.com/kalo-build/morphe-go/pkg/yaml"
 
-	"github.com/kaloseia/go/pkg/godef"
+	"github.com/kalo-build/go/pkg/godef"
 )
 
 var MorpheModelFieldToGoField = map[yaml.ModelFieldType]godef.GoType{

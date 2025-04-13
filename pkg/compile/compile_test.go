@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/kaloseia/go-util/assertfile"
-	"github.com/kaloseia/go/pkg/godef"
-	rcfg "github.com/kaloseia/morphe-go/pkg/registry/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/internal/testutils"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/go-util/assertfile"
+	"github.com/kalo-build/go/pkg/godef"
+	rcfg "github.com/kalo-build/morphe-go/pkg/registry/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/internal/testutils"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
 )
 
 type CompileTestSuite struct {
@@ -60,27 +60,27 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 		MorpheConfig: cfg.MorpheConfig{
 			MorpheModelsConfig: cfg.MorpheModelsConfig{
 				Package: godef.Package{
-					Path: "github.com/kaloseia/dummy/models",
+					Path: "github.com/kalo-build/dummy/models",
 					Name: "models",
 				},
 				ReceiverName: "m",
 			},
 			MorpheStructuresConfig: cfg.MorpheStructuresConfig{
 				Package: godef.Package{
-					Path: "github.com/kaloseia/dummy/structures",
+					Path: "github.com/kalo-build/dummy/structures",
 					Name: "structures",
 				},
 				ReceiverName: "s",
 			},
 			MorpheEnumsConfig: cfg.MorpheEnumsConfig{
 				Package: godef.Package{
-					Path: "github.com/kaloseia/dummy/enums",
+					Path: "github.com/kalo-build/dummy/enums",
 					Name: "enums",
 				},
 			},
 			MorpheEntitiesConfig: cfg.MorpheEntitiesConfig{
 				Package: godef.Package{
-					Path: "github.com/kaloseia/dummy/entities",
+					Path: "github.com/kalo-build/dummy/entities",
 					Name: "entities",
 				},
 				ReceiverName: "e",

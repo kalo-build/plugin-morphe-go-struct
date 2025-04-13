@@ -1,12 +1,12 @@
-module github.com/kaloseia/plugin-morphe-go-struct
+module github.com/kalo-build/plugin-morphe-go-struct
 
 go 1.21.6
 
 require (
-	github.com/kaloseia/clone v0.0.0-20240601081950-41de0e12ccb4
-	github.com/kaloseia/go v0.0.0-20250201193523-5ecda071d544
-	github.com/kaloseia/go-util v0.0.0-20240710152636-8268868e8c7c
-	github.com/kaloseia/morphe-go v0.0.0-20250111161508-90f1ab66555e
+	github.com/kalo-build/clone v0.0.0-20240601081950-41de0e12ccb4
+	github.com/kalo-build/go v0.0.0-20250201193523-5ecda071d544
+	github.com/kalo-build/go-util v0.0.0-20240710152636-8268868e8c7c
+	github.com/kalo-build/morphe-go v0.0.0-20250111161508-90f1ab66555e
 	github.com/stretchr/testify v1.9.0
 )
 

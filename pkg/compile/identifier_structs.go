@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/kaloseia/go-util/strcase"
-	"github.com/kaloseia/go/pkg/godef"
+	"github.com/kalo-build/go-util/strcase"
+	"github.com/kalo-build/go/pkg/godef"
 )
 
 type IdentifierConfig interface {

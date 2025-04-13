@@ -1,11 +1,11 @@
 package compile
 
 import (
-	r "github.com/kaloseia/morphe-go/pkg/registry"
-	rcfg "github.com/kaloseia/morphe-go/pkg/registry/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/write"
+	r "github.com/kalo-build/morphe-go/pkg/registry"
+	rcfg "github.com/kalo-build/morphe-go/pkg/registry/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/write"
 )
 
 type MorpheCompileConfig struct {
