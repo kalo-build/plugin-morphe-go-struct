@@ -1,6 +1,6 @@
 package compile
 
-import "github.com/kaloseia/go/pkg/godef"
+import "github.com/kalo-build/go/pkg/godef"
 
 // CompiledMorpheStructs maps Morphe.Name -> MorpheStruct.Name -> CompiledStruct
 type CompiledMorpheStructs map[string]map[string]CompiledStruct

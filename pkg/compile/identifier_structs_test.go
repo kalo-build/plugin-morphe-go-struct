@@ -3,7 +3,7 @@ package compile
 import (
 	"testing"
 
-	"github.com/kaloseia/go/pkg/godef"
+	"github.com/kalo-build/go/pkg/godef"
 	"github.com/stretchr/testify/assert"
 )
 

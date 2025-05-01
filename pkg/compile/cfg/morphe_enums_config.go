@@ -3,7 +3,7 @@ package cfg
 import (
 	"fmt"
 
-	"github.com/kaloseia/go/pkg/godef"
+	"github.com/kalo-build/go/pkg/godef"
 )
 
 type MorpheEnumsConfig struct {

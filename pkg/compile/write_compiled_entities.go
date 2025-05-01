@@ -1,11 +1,11 @@
 package compile
 
 import (
-	"github.com/kaloseia/clone"
-	"github.com/kaloseia/go-util/core"
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/write"
+	"github.com/kalo-build/clone"
+	"github.com/kalo-build/go-util/core"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/write"
 )
 
 func WriteAllEntityStructDefinitions(config MorpheCompileConfig, allEntityStructDefs map[string][]*godef.Struct) (CompiledMorpheStructs, error) {

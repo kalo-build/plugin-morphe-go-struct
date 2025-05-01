@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/morphe-go/pkg/registry"
-	"github.com/kaloseia/morphe-go/pkg/yaml"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/morphe-go/pkg/registry"
+	"github.com/kalo-build/morphe-go/pkg/yaml"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -24,27 +24,27 @@ func TestCompileModelsTestSuite(t *testing.T) {
 func (suite *CompileModelsTestSuite) getMorpheConfig() cfg.MorpheConfig {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -285,7 +285,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackagePath() 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "",
 		},
 		ReceiverName: "m",
@@ -327,7 +327,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoPackageName() 
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_NoReceiverName() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "",

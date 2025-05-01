@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/morphe-go/pkg/yaml"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/morphe-go/pkg/yaml"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,7 +31,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_String() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -81,7 +81,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_Float() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -126,7 +126,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_Integer() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -171,7 +171,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_NoName() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -197,7 +197,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_NoType() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -223,7 +223,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_NoEntries() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -245,7 +245,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_EntryTypeMismatch() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -281,7 +281,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_StartHook_Successful(
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -332,7 +332,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_StartHook_Failure() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -376,7 +376,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_SuccessHook_Successfu
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -427,7 +427,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_SuccessHook_Failure()
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
@@ -463,7 +463,7 @@ func (suite *CompileEnumsTestSuite) TestMorpheEnumToGoEnum_FailureHook() {
 
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}

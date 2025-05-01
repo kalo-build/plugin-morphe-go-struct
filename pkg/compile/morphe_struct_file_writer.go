@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kaloseia/go-util/core"
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/gofile"
+	"github.com/kalo-build/go-util/core"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/gofile"
 )
 
 type MorpheStructFileWriter struct {

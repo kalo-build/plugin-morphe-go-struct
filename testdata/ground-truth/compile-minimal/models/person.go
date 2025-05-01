@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/kaloseia/dummy/enums"
+	"github.com/kalo-build/dummy/enums"
 )
 
 type Person struct {

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/morphe-go/pkg/registry"
-	"github.com/kaloseia/morphe-go/pkg/yaml"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/morphe-go/pkg/registry"
+	"github.com/kalo-build/morphe-go/pkg/yaml"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -24,7 +24,7 @@ func TestCompileStructuresTestSuite(t *testing.T) {
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -179,7 +179,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoPackage
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoPackageName() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "",
 		},
 		ReceiverName: "s",
@@ -212,7 +212,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoPackage
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoReceiverName() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "",
@@ -245,7 +245,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoReceive
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoStructureName() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -278,7 +278,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoStructu
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoFields() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -307,7 +307,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_NoFields(
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_StartHook_Successful() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -356,7 +356,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_StartHook
 	var featureFlag = "otherName"
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -397,7 +397,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_SuccessHo
 	var featureFlag = "otherName"
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -455,7 +455,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_SuccessHo
 	var featureFlag = "otherName"
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
@@ -534,14 +534,14 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_FailureHo
 func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_EnumField() {
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}

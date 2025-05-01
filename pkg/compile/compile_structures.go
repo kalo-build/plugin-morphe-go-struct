@@ -1,13 +1,13 @@
 package compile
 
 import (
-	"github.com/kaloseia/go-util/core"
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/morphe-go/pkg/registry"
-	"github.com/kaloseia/morphe-go/pkg/yaml"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/typemap"
+	"github.com/kalo-build/go-util/core"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/morphe-go/pkg/registry"
+	"github.com/kalo-build/morphe-go/pkg/yaml"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/typemap"
 )
 
 func AllMorpheStructuresToGoStructs(config MorpheCompileConfig, r *registry.Registry) (map[string]*godef.Struct, error) {

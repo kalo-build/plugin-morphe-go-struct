@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kaloseia/go-util/strcase"
+	"github.com/kalo-build/go-util/strcase"
 )
 
 func WriteGoDefinitionFile(dirPath string, definitionName string, goFileContents string) ([]byte, error) {

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kaloseia/go/pkg/godef"
-	"github.com/kaloseia/morphe-go/pkg/registry"
-	"github.com/kaloseia/morphe-go/pkg/yaml"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/cfg"
-	"github.com/kaloseia/plugin-morphe-go-struct/pkg/compile/hook"
+	"github.com/kalo-build/go/pkg/godef"
+	"github.com/kalo-build/morphe-go/pkg/registry"
+	"github.com/kalo-build/morphe-go/pkg/yaml"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -24,27 +24,27 @@ func TestCompileEntitiesTestSuite(t *testing.T) {
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -220,27 +220,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs() {
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoEntityName() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -282,27 +282,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoEntityName(
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoFields() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -356,27 +356,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoFields() {
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoIdentifiers() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -430,27 +430,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoIdentifiers
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_EnumField() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -564,27 +564,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_EnumField() {
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_EnumField_EnumNotFound() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -654,27 +654,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_EnumField_Enu
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOne() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -834,27 +834,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOn
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForMany() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1016,27 +1016,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForMa
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOne() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1196,27 +1196,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOn
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasMany() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1386,27 +1386,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_StartHook_Suc
 
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1498,27 +1498,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_StartHook_Fai
 
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1589,27 +1589,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_SuccessHook_S
 
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1706,27 +1706,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_SuccessHook_F
 
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
@@ -1796,27 +1796,27 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_FailureHook_U
 
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/models",
+			Path: "github.com/kalo-build/project/domain/models",
 			Name: "models",
 		},
 		ReceiverName: "m",
 	}
 	structuresConfig := cfg.MorpheStructuresConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/structures",
+			Path: "github.com/kalo-build/project/domain/structures",
 			Name: "structures",
 		},
 		ReceiverName: "s",
 	}
 	enumsConfig := cfg.MorpheEnumsConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/enums",
+			Path: "github.com/kalo-build/project/domain/enums",
 			Name: "enums",
 		},
 	}
 	entitiesConfig := cfg.MorpheEntitiesConfig{
 		Package: godef.Package{
-			Path: "github.com/kaloseia/project/domain/entities",
+			Path: "github.com/kalo-build/project/domain/entities",
 			Name: "entities",
 		},
 		ReceiverName: "e",
