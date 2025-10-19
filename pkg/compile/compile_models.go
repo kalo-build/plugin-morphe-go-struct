@@ -57,6 +57,12 @@ func morpheModelToGoStructs(config cfg.MorpheConfig, r *registry.Registry, model
 		return nil, validateMorpheErr
 	}
 
+	// Validate aliased relationships
+	validateAliasErr := validateAliasedRelations(r, model)
+	if validateAliasErr != nil {
+		return nil, validateAliasErr
+	}
+
 	modelStruct, modelStructErr := getModelStruct(config, r, model)
 	if modelStructErr != nil {
 		return nil, modelStructErr
@@ -149,32 +155,120 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 	allFields := []godef.StructField{}
 
 	allRelatedModelNames := core.MapKeysSorted(modelRelations)
-	for _, relatedModelName := range allRelatedModelNames {
-		relationDef := modelRelations[relatedModelName]
-		relatedModelDef, relatedModelDefErr := r.GetModel(relatedModelName)
-		if relatedModelDefErr != nil {
-			return nil, relatedModelDefErr
+	for _, relationshipName := range allRelatedModelNames {
+		relationDef := modelRelations[relationshipName]
+
+		// For polymorphic For* relationships (ForOnePoly/ForManyPoly),
+		// we need to generate type and ID fields instead of looking up a model
+		if yamlops.IsRelationPoly(relationDef.Type) && yamlops.IsRelationFor(relationDef.Type) {
+			// Validate that For property is provided and has at least one model
+			if len(relationDef.For) == 0 {
+				return nil, fmt.Errorf("polymorphic relation '%s' must have at least one model in 'for' property", relationshipName)
+			}
+
+			// Generate polymorphic type field
+			typeFieldName := relationshipName + "Type"
+			typeField := godef.StructField{
+				Name: typeFieldName,
+				Type: godef.GoTypeString,
+			}
+			allFields = append(allFields, typeField)
+
+			// Generate polymorphic ID field
+			idFieldName := relationshipName + "ID"
+			idField := godef.StructField{
+				Name: idFieldName,
+				Type: godef.GoTypeString,
+			}
+			allFields = append(allFields, idField)
+
+			// No need to generate the relationship field for ForOnePoly/ForManyPoly
+			// as it's a polymorphic relationship and can't be strongly typed
+			continue
 		}
 
-		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName, relatedModelDef, relationDef.Type)
+		// For polymorphic Has* relationships (HasOnePoly/HasManyPoly),
+		// the relationship name is used as field name, and aliased specifies the target model
+		if yamlops.IsRelationPoly(relationDef.Type) && yamlops.IsRelationHas(relationDef.Type) {
+			// Use the aliased value directly as the target model name
+			targetModelName := relationDef.Aliased
+			if targetModelName == "" {
+				return nil, fmt.Errorf("polymorphic Has* relationship '%s' must specify 'aliased' property", relationshipName)
+			}
+
+			// Validate that Through property references a valid polymorphic relationship
+			if relationDef.Through != "" {
+				// Get the target model to validate the Through relationship exists
+				relatedModelDef, relatedModelDefErr := r.GetModel(targetModelName)
+				if relatedModelDefErr != nil {
+					return nil, relatedModelDefErr
+				}
+
+				// Check if the Through relationship exists on the target model
+				throughRelation, throughExists := relatedModelDef.Related[relationDef.Through]
+				if !throughExists {
+					return nil, fmt.Errorf("polymorphic relation '%s' has invalid 'through' property: relation '%s' not found on model '%s'", relationshipName, relationDef.Through, targetModelName)
+				}
+
+				// Verify the Through relationship is a polymorphic For* relationship
+				if !yamlops.IsRelationPoly(throughRelation.Type) || !yamlops.IsRelationFor(throughRelation.Type) {
+					return nil, fmt.Errorf("polymorphic relation '%s' has invalid 'through' property: relation '%s' must be a polymorphic For* relationship", relationshipName, relationDef.Through)
+				}
+			}
+
+			relatedModelDef, relatedModelDefErr := r.GetModel(targetModelName)
+			if relatedModelDefErr != nil {
+				return nil, relatedModelDefErr
+			}
+
+			goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type)
+			if goIDErr != nil {
+				return nil, goIDErr
+			}
+			allFields = append(allFields, goIDField)
+
+			goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type)
+			allFields = append(allFields, goRelatedField)
+			continue
+		}
+
+		// Resolve actual target model name (handles aliasing)
+		targetAlias := yamlops.GetRelationTargetName(relationshipName, relationDef.Aliased)
+
+		// For HasMany relationships with path aliases (e.g., "Person.WorkProject"),
+		// extract just the model name (first part before the dot)
+		targetModelName := targetAlias
+		if yamlops.IsRelationMany(relationDef.Type) && yamlops.IsRelationHas(relationDef.Type) {
+			if parts := strings.Split(targetAlias, "."); len(parts) > 1 {
+				targetModelName = parts[0]
+			}
+		}
+
+		relatedModelDef, relatedModelDefErr := r.GetModel(targetModelName)
+		if relatedModelDefErr != nil {
+			return nil, fmt.Errorf("failed to get model '%s' for relation '%s': %w", targetModelName, relationshipName, relatedModelDefErr)
+		}
+
+		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type)
 		if goIDErr != nil {
 			return nil, goIDErr
 		}
 		allFields = append(allFields, goIDField)
 
-		goRelatedField := getRelatedGoFieldForMorpheModel(relatedModelName, relationDef.Type)
+		goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type)
 		allFields = append(allFields, goRelatedField)
 	}
 	return allFields, nil
 }
 
-func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedModelDef yaml.Model, relationType string) (godef.StructField, error) {
+func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName string, relatedModelDef yaml.Model, relationType string) (godef.StructField, error) {
 	relatedPrimaryIDFieldName, relatedIDFieldNameErr := yamlops.GetModelPrimaryIdentifierFieldName(relatedModelDef)
 	if relatedIDFieldNameErr != nil {
 		return godef.StructField{}, fmt.Errorf("related %w", relatedIDFieldNameErr)
 	}
 
-	idFieldName := fmt.Sprintf("%s%s", relatedModelName, relatedPrimaryIDFieldName)
+	// Use relationship name for field naming (semantic), not target model name
+	idFieldName := fmt.Sprintf("%s%s", relationshipName, relatedPrimaryIDFieldName)
 	if yamlops.IsRelationMany(relationType) {
 		idFieldName += "s"
 	}
@@ -207,14 +301,16 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relatedModelName string, relatedMo
 	}, nil
 }
 
-func getRelatedGoFieldForMorpheModel(relatedModelName string, relationType string) godef.StructField {
-	fieldName := relatedModelName
+func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, relationType string) godef.StructField {
+	// Use relationship name for field naming (semantic)
+	fieldName := relationshipName
 	if yamlops.IsRelationMany(relationType) {
 		fieldName += "s"
 	}
 
+	// Use target model name for struct type reference
 	valueType := godef.GoTypeStruct{
-		Name: relatedModelName,
+		Name: targetModelName,
 	}
 
 	if yamlops.IsRelationMany(relationType) {
@@ -343,4 +439,35 @@ func triggerCompileMorpheModelFailure(hooks hook.CompileMorpheModel, morpheConfi
 	}
 
 	return hooks.OnCompileMorpheModelFailure(morpheConfig, model.DeepClone(), failureErr)
+}
+
+// validateAliasedRelations validates that all aliased target models exist in the registry
+func validateAliasedRelations(r *registry.Registry, model yaml.Model) error {
+	for relationshipName, relation := range model.Related {
+		targetAlias := yamlops.GetRelationTargetName(relationshipName, relation.Aliased)
+
+		// For HasMany relationships with path aliases (e.g., "Person.WorkProject"),
+		// extract just the model name (first part before the dot)
+		targetModelName := targetAlias
+		if yamlops.IsRelationMany(relation.Type) && yamlops.IsRelationHas(relation.Type) {
+			if parts := strings.Split(targetAlias, "."); len(parts) > 1 {
+				targetModelName = parts[0]
+			}
+		}
+
+		// Only validate if the target is different (i.e., aliased)
+		if targetModelName != relationshipName {
+			// Skip validation for polymorphic relationships - aliases are conceptual names
+			if yamlops.IsRelationPoly(relation.Type) {
+				continue
+			}
+
+			_, err := r.GetModel(targetModelName)
+			if err != nil {
+				return fmt.Errorf("aliased target model '%s' for relation '%s' in model '%s' not found",
+					targetModelName, relationshipName, model.Name)
+			}
+		}
+	}
+	return nil
 }

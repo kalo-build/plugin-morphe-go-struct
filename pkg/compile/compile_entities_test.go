@@ -1854,3 +1854,1058 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_FailureHook_U
 	suite.ErrorContains(goStructErr, "Entity User: morphe entity User field UUID references unknown root model: NonExistentModel")
 	suite.Nil(allGoStructs)
 }
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOnePoly() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Comment entity for a model that has ForOnePoly relationships
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Content": {
+				Type: "Comment.Content",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	// Comment model with ForOnePoly relationship
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	articleModel := yaml.Model{
+		Name: "Article",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+	r.SetModel("Article", articleModel)
+	r.SetEntity("Comment", commentEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, commentEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Comment")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 2)
+
+	// Entity fields only include the declared fields, not the polymorphic columns
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "Content")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "ID")
+	suite.Equal(field01.Type, godef.GoTypeUint)
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForManyPoly() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Tag entity for a model that has ForManyPoly relationships
+	tagEntity := yaml.Entity{
+		Name: "Tag",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Tag.ID",
+			},
+			"Name": {
+				Type: "Tag.Name",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	// Tag model with ForManyPoly relationship
+	tagModel := yaml.Model{
+		Name: "Tag",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Name": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Taggable": {
+				Type: "ForManyPoly",
+				For:  []string{"Post", "Product"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	productModel := yaml.Model{
+		Name: "Product",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Tag", tagModel)
+	r.SetModel("Post", postModel)
+	r.SetModel("Product", productModel)
+	r.SetEntity("Tag", tagEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, tagEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Tag")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 2)
+
+	// Entity fields only include the declared fields, not the polymorphic columns
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeUint)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Name")
+	suite.Equal(field01.Type, godef.GoTypeString)
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOnePoly() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Post entity that has a polymorphic Comment relationship
+	postEntity := yaml.Entity{
+		Name: "Post",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Post.ID",
+			},
+			"Title": {
+				Type: "Post.Title",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Note": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	// Comment model with the forward ForOnePoly relationship
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":      {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Content": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	// Comment entity
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Text": {
+				Type: "Comment.Text",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID":    {Type: yaml.ModelFieldTypeUUID},
+			"Title": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Note": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+	r.SetEntity("Comment", commentEntity)
+	r.SetEntity("Post", postEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, postEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Title")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// HasOnePoly generates regular relationship fields
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "NoteID")
+	suite.Equal(field02.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "Note")
+	suite.Equal(field03.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	})
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasManyPoly() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Post entity that has polymorphic Comments relationship
+	postEntity := yaml.Entity{
+		Name: "Post",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Post.ID",
+			},
+			"Title": {
+				Type: "Post.Title",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Note": {
+				Type:    "HasManyPoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	// Comment model with the forward ForOnePoly relationship
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":      {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Content": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	// Comment entity
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Text": {
+				Type: "Comment.Text",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID":    {Type: yaml.ModelFieldTypeUUID},
+			"Title": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Note": {
+				Type:    "HasManyPoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+	r.SetEntity("Comment", commentEntity)
+	r.SetEntity("Post", postEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, postEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Title")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// HasManyPoly generates regular relationship array fields
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "NoteIDs")
+	suite.Equal(field02.Type, godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "Notes")
+	suite.Equal(field03.Type, godef.GoTypeArray{
+		IsSlice: true,
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	})
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Mixed_Polymorphic_And_Regular() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Comment entity with both polymorphic and regular relationships
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Content": {
+				Type: "Comment.Content",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"User": {
+				Type: "ForOne", // Regular relationship
+			},
+		},
+	}
+
+	// User model and entity
+	userModel := yaml.Model{
+		Name: "User",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeAutoIncrement},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	userEntity := yaml.Entity{
+		Name: "User",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "User.ID",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	// Comment model with mixed relationships
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":      {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Content": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+			"User": {
+				Type: "ForOne", // Regular relationship
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"id": {Type: yaml.ModelFieldTypeUUID},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	articleModel := yaml.Model{
+		Name: "Article",
+		Fields: map[string]yaml.ModelField{
+			"id": {Type: yaml.ModelFieldTypeUUID},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("User", userModel)
+	r.SetModel("Post", postModel)
+	r.SetModel("Article", articleModel)
+	r.SetEntity("Comment", commentEntity)
+	r.SetEntity("User", userEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, commentEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Comment")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular entity fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "Content")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "ID")
+	suite.Equal(field01.Type, godef.GoTypeUint)
+
+	// Regular relationship fields
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "UserID")
+	suite.Equal(field02.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "User")
+	suite.Equal(field03.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{
+			Name: "User",
+		},
+	})
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOnePoly_Aliased() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Comment entity
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Text": {
+				Type: "Comment.Text",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	// Document model
+	documentModel := yaml.Model{
+		Name: "Document",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeAutoIncrement},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	// Video model
+	videoModel := yaml.Model{
+		Name: "Video",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeAutoIncrement},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	// Comment model with ForOnePoly using alias
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Text": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"CommentableResource": {
+				Type:    "ForOnePoly",
+				For:     []string{"Document", "Video"},
+				Aliased: "Resource", // Alias that doesn't map to any model
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Document", documentModel)
+	r.SetModel("Video", videoModel)
+	r.SetModel("Comment", commentModel)
+	r.SetEntity("Comment", commentEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, commentEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Comment")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 2)
+
+	// Entity only includes declared fields
+	suite.Equal("ID", structFields0[0].Name)
+	suite.Equal(godef.GoTypeUint, structFields0[0].Type)
+
+	suite.Equal("Text", structFields0[1].Name)
+	suite.Equal(godef.GoTypeString, structFields0[1].Type)
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOnePoly_Aliased() {
+	modelsConfig := cfg.MorpheModelsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/models",
+			Name: "models",
+		},
+		ReceiverName: "m",
+	}
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	entitiesConfig := cfg.MorpheEntitiesConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/entities",
+			Name: "entities",
+		},
+		ReceiverName: "e",
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig:     modelsConfig,
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumConfig,
+			MorpheEntitiesConfig:   entitiesConfig,
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	// Comment model with ForOnePoly
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Text": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Task"},
+			},
+		},
+	}
+
+	// Post model with HasOnePoly using different field name
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID":    {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Title": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"FeaturedComment": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	// Post entity with the aliased relationship
+	postEntity := yaml.Entity{
+		Name: "Post",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Post.ID",
+			},
+			"Title": {
+				Type: "Post.Title",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"FeaturedComment": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	// Comment entity
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Text": {
+				Type: "Comment.Text",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Task"},
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+	r.SetEntity("Post", postEntity)
+	r.SetEntity("Comment", commentEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, postEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	suite.Equal("ID", structFields0[0].Name)
+	suite.Equal(godef.GoTypeUint, structFields0[0].Type)
+
+	suite.Equal("Title", structFields0[1].Name)
+	suite.Equal(godef.GoTypeString, structFields0[1].Type)
+
+	// Aliased polymorphic relationship uses the field name
+	suite.Equal("FeaturedCommentID", structFields0[2].Name)
+	suite.Equal(godef.GoTypePointer{
+		ValueType: godef.GoTypeUint,
+	}, structFields0[2].Type)
+
+	suite.Equal("FeaturedComment", structFields0[3].Name)
+	suite.Equal(godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	}, structFields0[3].Type)
+}

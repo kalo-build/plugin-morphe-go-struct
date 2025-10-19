@@ -206,4 +206,34 @@ func (suite *CompileTestSuite) TestMorpheToGo() {
 	gtEntityIDPath10 := gtEntitiesDirPath + "/person_id_primary.go"
 	suite.FileExists(entityIDPath10)
 	suite.FileEquals(entityIDPath10, gtEntityIDPath10)
+
+	// Test Person model with ForOne aliased relationships to Contact and Comment
+	personPath := modelsDirPath + "/person.go"
+	gtPersonPath := gtModelsDirPath + "/person.go"
+	suite.FileExists(personPath)
+	suite.FileEquals(personPath, gtPersonPath)
+
+	// Test Company model with ForOne aliased relationships to Contact
+	companyPath := modelsDirPath + "/company.go"
+	gtCompanyPath := gtModelsDirPath + "/company.go"
+	suite.FileExists(companyPath)
+	suite.FileEquals(companyPath, gtCompanyPath)
+
+	// Test ContactInfo model with ForOne aliased relationship to Contact
+	contactInfoPath := modelsDirPath + "/contact_info.go"
+	gtContactInfoPath := gtModelsDirPath + "/contact_info.go"
+	suite.FileExists(contactInfoPath)
+	suite.FileEquals(contactInfoPath, gtContactInfoPath)
+
+	// Test Contact model (aliasing target)
+	contactPath := modelsDirPath + "/contact.go"
+	gtContactPath := gtModelsDirPath + "/contact.go"
+	suite.FileExists(contactPath)
+	suite.FileEquals(contactPath, gtContactPath)
+
+	// Test Comment model (aliasing target)
+	commentPath := modelsDirPath + "/comment.go"
+	gtCommentPath := gtModelsDirPath + "/comment.go"
+	suite.FileExists(commentPath)
+	suite.FileEquals(commentPath, gtCommentPath)
 }

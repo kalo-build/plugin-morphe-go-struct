@@ -12,3 +12,6 @@ identifiers:
 related:
   Person:
     type: ForOne
+  RelatedContact:
+    type: ForOne
+    aliased: Contact

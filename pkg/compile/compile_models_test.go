@@ -1498,3 +1498,710 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany(
 	suite.Equal(structFields10.Type, godef.GoTypeUint)
 	suite.Len(structFields10.Tags, 0)
 }
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOnePoly() {
+	config := suite.getCompileConfig()
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	articleModel := yaml.Model{
+		Name: "Article",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Post", postModel)
+	r.SetModel("Article", articleModel)
+	r.SetModel("Comment", commentModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, commentModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Comment")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields (sorted alphabetically)
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "Content")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "ID")
+	suite.Equal(field01.Type, godef.GoTypeUint)
+
+	// Polymorphic type field
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "CommentableType")
+	suite.Equal(field02.Type, godef.GoTypeString)
+
+	// Polymorphic ID field
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "CommentableID")
+	suite.Equal(field03.Type, godef.GoTypeString)
+
+	// Check that NO relationship struct field is generated for polymorphic relationships
+	for _, field := range structFields0 {
+		suite.NotEqual(field.Name, "Commentable")
+	}
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForManyPoly() {
+	config := suite.getCompileConfig()
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	productModel := yaml.Model{
+		Name: "Product",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	tagModel := yaml.Model{
+		Name: "Tag",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Name": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Taggable": {
+				Type: "ForManyPoly",
+				For:  []string{"Post", "Product"},
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Post", postModel)
+	r.SetModel("Product", productModel)
+	r.SetModel("Tag", tagModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, tagModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Tag")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeUint)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Name")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// Polymorphic type field
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "TaggableType")
+	suite.Equal(field02.Type, godef.GoTypeString)
+
+	// Polymorphic ID field
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "TaggableID")
+	suite.Equal(field03.Type, godef.GoTypeString)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOnePoly() {
+	config := suite.getCompileConfig()
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Comment": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Title")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// Has* polymorphic generates regular ID and struct fields
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "CommentID")
+	suite.Equal(field02.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "Comment")
+	suite.Equal(field03.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	})
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasManyPoly() {
+	config := suite.getCompileConfig()
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Comment": {
+				Type:    "HasManyPoly",
+				Through: "Commentable",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Title")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// Has* polymorphic generates regular ID array and struct array fields
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "CommentIDs")
+	suite.Equal(field02.Type, godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "Comments")
+	suite.Equal(field03.Type, godef.GoTypeArray{
+		IsSlice: true,
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	})
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOnePoly_MissingForProperty() {
+	config := suite.getCompileConfig()
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				// Missing For property
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, commentModel)
+
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "polymorphic relation 'Commentable' must have at least one model in 'for' property")
+	suite.Nil(allGoStructs)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOnePoly_MissingAliased() {
+	config := suite.getCompileConfig()
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Comment": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				// Missing Aliased property
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Post", postModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
+
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "polymorphic Has* relationship 'Comment' must specify 'aliased' property")
+	suite.Nil(allGoStructs)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasManyPoly_InvalidThrough() {
+	config := suite.getCompileConfig()
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Comment": {
+				Type:    "HasManyPoly",
+				Through: "NonExistentRelation",
+				Aliased: "Comment",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
+
+	suite.NotNil(allStructsErr)
+	suite.ErrorContains(allStructsErr, "polymorphic relation 'Comment' has invalid 'through' property: relation 'NonExistentRelation' not found on model 'Comment'")
+	suite.Nil(allGoStructs)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOnePoly_Aliased() {
+	config := suite.getCompileConfig()
+
+	// Define target models
+	documentModel := yaml.Model{
+		Name: "Document",
+		Fields: map[string]yaml.ModelField{
+			"ID":    {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Title": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	videoModel := yaml.Model{
+		Name: "Video",
+		Fields: map[string]yaml.ModelField{
+			"ID":  {Type: yaml.ModelFieldTypeAutoIncrement},
+			"URL": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	// Comment model with ForOnePoly using alias
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Text": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"CommentableResource": {
+				Type:    "ForOnePoly",
+				For:     []string{"Document", "Video"},
+				Aliased: "Resource", // Alias that doesn't map to any model
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Document", documentModel)
+	r.SetModel("Video", videoModel)
+	r.SetModel("Comment", commentModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, commentModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Comment")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	suite.Equal("ID", structFields0[0].Name)
+	suite.Equal(godef.GoTypeUint, structFields0[0].Type)
+
+	suite.Equal("Text", structFields0[1].Name)
+	suite.Equal(godef.GoTypeString, structFields0[1].Type)
+
+	// Polymorphic fields use the relationship name, not the alias
+	suite.Equal("CommentableResourceType", structFields0[2].Name)
+	suite.Equal(godef.GoTypeString, structFields0[2].Type)
+
+	suite.Equal("CommentableResourceID", structFields0[3].Name)
+	suite.Equal(godef.GoTypeString, structFields0[3].Type)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne_Aliased() {
+	config := suite.getCompileConfig()
+
+	// ContactInfo model
+	contactInfoModel := yaml.Model{
+		Name: "ContactInfo",
+		Fields: map[string]yaml.ModelField{
+			"ID":    {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Email": {Type: yaml.ModelFieldTypeString},
+			"Phone": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	// Contact model that's just an alias for ContactInfo
+	contactModel := yaml.Model{
+		Name: "Contact",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeAutoIncrement},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"ContactInfo": {
+				Type:    "ForOne",
+				Aliased: "ContactInfo",
+			},
+		},
+	}
+
+	// Person model with aliased relationship
+	personModel := yaml.Model{
+		Name: "Person",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Name": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"PersonalContact": {
+				Type:    "ForOne",
+				Aliased: "Contact",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("ContactInfo", contactInfoModel)
+	r.SetModel("Contact", contactModel)
+	r.SetModel("Person", personModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, personModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Person")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	suite.Equal("ID", structFields0[0].Name)
+	suite.Equal("Name", structFields0[1].Name)
+
+	// Aliased relationship fields use the relationship name
+	suite.Equal("PersonalContactID", structFields0[2].Name)
+	suite.Equal(godef.GoTypePointer{ValueType: godef.GoTypeUint}, structFields0[2].Type)
+
+	suite.Equal("PersonalContact", structFields0[3].Name)
+	suite.Equal(godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{Name: "Contact"},
+	}, structFields0[3].Type)
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasMany_Aliased() {
+	config := suite.getCompileConfig()
+
+	// Project model
+	projectModel := yaml.Model{
+		Name: "Project",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Name": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+	}
+
+	// Person model with aliased HasMany relationships
+	personModel := yaml.Model{
+		Name: "Person",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Name": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"WorkProject": {
+				Type:    "HasMany",
+				Aliased: "Project",
+			},
+			"PersonalProject": {
+				Type:    "HasMany",
+				Aliased: "Project",
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Project", projectModel)
+	r.SetModel("Person", personModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, personModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Person")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 6)
+
+	// Regular fields
+	suite.Equal("ID", structFields0[0].Name)
+	suite.Equal("Name", structFields0[1].Name)
+
+	// PersonalProjects relationship
+	suite.Equal("PersonalProjectIDs", structFields0[2].Name)
+	suite.Equal(godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeUint,
+	}, structFields0[2].Type)
+
+	suite.Equal("PersonalProjects", structFields0[3].Name)
+	suite.Equal(godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeStruct{Name: "Project"},
+	}, structFields0[3].Type)
+
+	// WorkProjects relationship
+	suite.Equal("WorkProjectIDs", structFields0[4].Name)
+	suite.Equal(godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeUint,
+	}, structFields0[4].Type)
+
+	suite.Equal("WorkProjects", structFields0[5].Name)
+	suite.Equal(godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeStruct{Name: "Project"},
+	}, structFields0[5].Type)
+}

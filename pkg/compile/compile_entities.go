@@ -9,6 +9,7 @@ import (
 	"github.com/kalo-build/go/pkg/godef"
 	"github.com/kalo-build/morphe-go/pkg/registry"
 	"github.com/kalo-build/morphe-go/pkg/yaml"
+	"github.com/kalo-build/morphe-go/pkg/yamlops"
 	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
 	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/hook"
 	"github.com/kalo-build/plugin-morphe-go-struct/pkg/typemap"
@@ -55,7 +56,7 @@ func morpheEntityToGoStructs(config cfg.MorpheConfig, r *registry.Registry, enti
 		return nil, validateConfigErr
 
 	}
-	validateMorpheErr := entity.Validate(r.GetAllModels(), r.GetAllEnums())
+	validateMorpheErr := entity.Validate(r.GetAllEntities(), r.GetAllModels(), r.GetAllEnums())
 	if validateMorpheErr != nil {
 		return nil, validateMorpheErr
 	}
@@ -83,7 +84,7 @@ func getEntityStruct(config cfg.MorpheConfig, r *registry.Registry, entity yaml.
 		Name:    entity.Name,
 	}
 
-	structFields, fieldsErr := getGoFieldsForMorpheEntity(config, r, entity.Fields, entity.Related)
+	structFields, fieldsErr := getGoFieldsForMorpheEntity(config, r, entity)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -98,13 +99,13 @@ func getEntityStruct(config cfg.MorpheConfig, r *registry.Registry, entity yaml.
 	return &entityStruct, nil
 }
 
-func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, entityFields map[string]yaml.EntityField, entityRelated map[string]yaml.EntityRelation) ([]godef.StructField, error) {
+func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, entity yaml.Entity) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
-	allFieldNames := core.MapKeysSorted(entityFields)
+	allFieldNames := core.MapKeysSorted(entity.Fields)
 	// Handle direct fields
 	for _, fieldName := range allFieldNames {
-		entityField := entityFields[fieldName]
+		entityField := entity.Fields[fieldName]
 		fieldType, fieldErr := getModelFieldType(config, r, entityField.Type)
 		if fieldErr != nil {
 			return nil, fieldErr
@@ -118,7 +119,7 @@ func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, e
 	}
 
 	// Handle related entities
-	relatedFields, relatedErr := getRelatedGoFieldsForMorpheEntity(config, r, entityRelated)
+	relatedFields, relatedErr := getRelatedGoFieldsForMorpheEntity(config, r, entity.Related)
 	if relatedErr != nil {
 		return nil, relatedErr
 	}
@@ -131,22 +132,35 @@ func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Regi
 	allFields := []godef.StructField{}
 
 	allRelatedEntityNames := core.MapKeysSorted(entityRelations)
-	for _, entityName := range allRelatedEntityNames {
-		relation := entityRelations[entityName]
-		// Get target entity
-		targetEntity, entityErr := r.GetEntity(entityName)
-		if entityErr != nil {
-			return nil, fmt.Errorf("failed to get target entity for relation %s: %w", entityName, entityErr)
+	for _, relationshipName := range allRelatedEntityNames {
+		relation := entityRelations[relationshipName]
+
+		// Resolve actual target entity name (handles aliasing)
+		targetAlias := yamlops.GetRelationTargetName(relationshipName, relation.Aliased)
+
+		// For HasMany relationships with path aliases (e.g., "Person.WorkProject"),
+		// extract just the entity name (first part before the dot)
+		targetEntityName := targetAlias
+		if yamlops.IsRelationMany(relation.Type) && yamlops.IsRelationHas(relation.Type) {
+			if parts := strings.Split(targetAlias, "."); len(parts) > 1 {
+				targetEntityName = parts[0]
+			}
 		}
 
-		idField, idErr := getRelatedGoFieldForEntityPrimaryID(config, r, entityName, targetEntity, relation.Type)
+		// Get target entity
+		targetEntity, entityErr := r.GetEntity(targetEntityName)
+		if entityErr != nil {
+			return nil, fmt.Errorf("failed to get target entity for relation %s: %w", relationshipName, entityErr)
+		}
+
+		idField, idErr := getRelatedGoFieldForEntityPrimaryID(config, r, relationshipName, targetEntity, relation.Type)
 		if idErr != nil {
 			return nil, idErr
 		}
 		allFields = append(allFields, idField)
 
 		// Add entity reference field
-		entityField, entityErr := getRelatedGoFieldForEntity(entityName, targetEntity, relation.Type)
+		entityField, entityErr := getRelatedGoFieldForEntity(relationshipName, targetEntity, relation.Type)
 		if entityErr != nil {
 			return nil, entityErr
 		}
@@ -178,7 +192,7 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 	}
 
 	fieldName := relationName + "ID"
-	if strings.HasSuffix(relationType, "Many") {
+	if yamlops.IsRelationMany(relationType) {
 		fieldName += "s"
 		return godef.StructField{
 			Name: fieldName,
@@ -201,14 +215,13 @@ func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, r
 	var fieldType godef.GoType
 	fieldName := relationName
 
-	switch relationType {
-	case "ForOne", "HasOne":
+	if yamlops.IsRelationOne(relationType) {
 		fieldType = godef.GoTypePointer{
 			ValueType: godef.GoTypeStruct{
 				Name: targetEntity.Name,
 			},
 		}
-	case "ForMany", "HasMany":
+	} else if yamlops.IsRelationMany(relationType) {
 		fieldName += "s"
 		fieldType = godef.GoTypeArray{
 			IsSlice: true,
@@ -216,7 +229,7 @@ func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, r
 				Name: targetEntity.Name,
 			},
 		}
-	default:
+	} else {
 		return godef.StructField{}, fmt.Errorf("unknown entity relation type: %s", relationType)
 	}
 
@@ -241,15 +254,18 @@ func getModelFieldType(config cfg.MorpheConfig, r *registry.Registry, fieldType 
 
 	// Traverse through related models
 	for fieldIdx := 1; fieldIdx < len(fieldPath)-1; fieldIdx++ {
-		relatedName := fieldPath[fieldIdx]
-		_, exists := currentModel.Related[relatedName]
+		relationshipName := fieldPath[fieldIdx]
+		relationDef, exists := currentModel.Related[relationshipName]
 		if !exists {
-			return nil, fmt.Errorf("morphe entity field %s references unknown related model: %s", fieldType, relatedName)
+			return nil, fmt.Errorf("morphe entity field %s references unknown related model: %s", fieldType, relationshipName)
 		}
 
-		relatedModel, relatedErr := r.GetModel(relatedName)
+		// Resolve actual target model name (handles aliasing)
+		targetModelName := yamlops.GetRelationTargetName(relationshipName, relationDef.Aliased)
+
+		relatedModel, relatedErr := r.GetModel(targetModelName)
 		if relatedErr != nil {
-			return nil, fmt.Errorf("morphe entity field %s references invalid related model: %s", fieldType, relatedName)
+			return nil, fmt.Errorf("morphe entity field %s references invalid related model: %s", fieldType, relationshipName)
 		}
 		currentModel = relatedModel
 	}

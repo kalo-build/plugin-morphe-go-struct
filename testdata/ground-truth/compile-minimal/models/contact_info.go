@@ -1,10 +1,12 @@
 package models
 
 type ContactInfo struct {
-	Email    string
-	ID       uint `morphe:"mandatory"`
-	PersonID *uint
-	Person   *Person
+	Email            string
+	ID               uint `morphe:"mandatory"`
+	PersonID         *uint
+	Person           *Person
+	RelatedContactID *uint
+	RelatedContact   *Contact
 }
 
 func (m ContactInfo) GetIDEmail() ContactInfoIDEmail {
