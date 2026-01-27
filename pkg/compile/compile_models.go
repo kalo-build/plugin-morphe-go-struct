@@ -190,11 +190,8 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 		// For polymorphic Has* relationships (HasOnePoly/HasManyPoly),
 		// the relationship name is used as field name, and aliased specifies the target model
 		if yamlops.IsRelationPoly(relationDef.Type) && yamlops.IsRelationHas(relationDef.Type) {
-			// Use the aliased value directly as the target model name
-			targetModelName := relationDef.Aliased
-			if targetModelName == "" {
-				return nil, fmt.Errorf("polymorphic Has* relationship '%s' must specify 'aliased' property", relationshipName)
-			}
+			// Use the aliased value if provided, otherwise use the relationship name (same as regular relationships)
+			targetModelName := yamlops.GetRelationTargetName(relationshipName, relationDef.Aliased)
 
 			// Validate that Through property references a valid polymorphic relationship
 			if relationDef.Through != "" {

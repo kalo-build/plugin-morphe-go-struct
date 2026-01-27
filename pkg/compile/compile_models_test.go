@@ -1852,6 +1852,180 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasManyP
 	})
 }
 
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOnePoly_WithoutAliased() {
+	config := suite.getCompileConfig()
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Comment": {
+				Type:    "HasOnePoly",
+				Through: "Commentable",
+				// No Aliased property - should use relationship name "Comment" as target model
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Title")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// Has* polymorphic generates regular ID and struct fields using relationship name
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "CommentID")
+	suite.Equal(field02.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "Comment")
+	suite.Equal(field03.Type, godef.GoTypePointer{
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	})
+}
+
+func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasManyPoly_WithoutAliased() {
+	config := suite.getCompileConfig()
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeAutoIncrement,
+			},
+			"Content": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {
+				Type: yaml.ModelFieldTypeUUID,
+			},
+			"Title": {
+				Type: yaml.ModelFieldTypeString,
+			},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Comment": {
+				Type:    "HasManyPoly",
+				Through: "Commentable",
+				// No Aliased property - should use relationship name "Comment" as target model
+			},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+
+	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
+
+	suite.Nil(allStructsErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Post")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	// Regular fields
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Title")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	// Has* polymorphic generates regular ID array and struct array fields using relationship name
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "CommentIDs")
+	suite.Equal(field02.Type, godef.GoTypeArray{
+		IsSlice:   true,
+		ValueType: godef.GoTypeUint,
+	})
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "Comments")
+	suite.Equal(field03.Type, godef.GoTypeArray{
+		IsSlice: true,
+		ValueType: godef.GoTypeStruct{
+			Name: "Comment",
+		},
+	})
+}
+
 func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOnePoly_MissingForProperty() {
 	config := suite.getCompileConfig()
 
@@ -1880,38 +2054,6 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOnePo
 
 	suite.NotNil(allStructsErr)
 	suite.ErrorContains(allStructsErr, "polymorphic relation 'Commentable' must have at least one model in 'for' property")
-	suite.Nil(allGoStructs)
-}
-
-func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOnePoly_MissingAliased() {
-	config := suite.getCompileConfig()
-
-	postModel := yaml.Model{
-		Name: "Post",
-		Fields: map[string]yaml.ModelField{
-			"ID": {
-				Type: yaml.ModelFieldTypeUUID,
-			},
-		},
-		Identifiers: map[string]yaml.ModelIdentifier{
-			"primary": {Fields: []string{"ID"}},
-		},
-		Related: map[string]yaml.ModelRelation{
-			"Comment": {
-				Type:    "HasOnePoly",
-				Through: "Commentable",
-				// Missing Aliased property
-			},
-		},
-	}
-
-	r := registry.NewRegistry()
-	r.SetModel("Post", postModel)
-
-	allGoStructs, allStructsErr := compile.MorpheModelToGoStructs(config, r, postModel)
-
-	suite.NotNil(allStructsErr)
-	suite.ErrorContains(allStructsErr, "polymorphic Has* relationship 'Comment' must specify 'aliased' property")
 	suite.Nil(allGoStructs)
 }
 
