@@ -1,0 +1,54 @@
+name: "@kalo-build/plugin-morphe-go-struct"
+displayName: "Morphe Go Struct"
+description: "Generates Go struct definitions from Morphe model definitions. Creates models, entities, enums, and structures."
+version: "1.0.0"
+
+input:
+  format: "KA:MO1:YAML1"
+  description: "Morphe YAML schema files"
+  suggestedStore:
+    name: "KA_MO_YAML"
+    type: "localFileSystem"
+    path: "./morphe"
+
+output:
+  format: "KA:MO1:GO1"
+  description: "Go struct definition files"
+  suggestedStore:
+    name: "KA_MO_GO"
+    type: "localFileSystem"
+    path: "./types"
+
+configSchema:
+  models:
+    type: object
+    description: "Model generation configuration"
+    properties:
+      PackagePath:
+        type: string
+        required: true
+        description: "Go package path for generated model files"
+  enums:
+    type: object
+    description: "Enum generation configuration"
+    properties:
+      PackagePath:
+        type: string
+        required: true
+        description: "Go package path for generated enum files"
+  structures:
+    type: object
+    description: "Structure generation configuration"
+    properties:
+      PackagePath:
+        type: string
+        required: true
+        description: "Go package path for generated structure files"
+  entities:
+    type: object
+    description: "Entity generation configuration"
+    properties:
+      PackagePath:
+        type: string
+        required: true
+        description: "Go package path for generated entity files"
