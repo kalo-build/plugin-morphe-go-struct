@@ -88,7 +88,7 @@ func getModelStruct(config cfg.MorpheConfig, r *registry.Registry, model yaml.Mo
 		Package: config.MorpheModelsConfig.Package,
 		Name:    model.Name,
 	}
-	structFields, fieldsErr := getGoFieldsForMorpheModel(config.MorpheEnumsConfig.Package, r, model)
+	structFields, fieldsErr := getGoFieldsForMorpheModel(config.MorpheEnumsConfig.Package, r, model, config.MorpheModelsConfig.FieldCasing)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -103,13 +103,13 @@ func getModelStruct(config cfg.MorpheConfig, r *registry.Registry, model yaml.Mo
 	return &modelStruct, nil
 }
 
-func getGoFieldsForMorpheModel(enumPackage godef.Package, r *registry.Registry, model yaml.Model) ([]godef.StructField, error) {
-	allFields, fieldErr := getDirectGoFieldsForMorpheModel(enumPackage, r.GetAllEnums(), model.Fields)
+func getGoFieldsForMorpheModel(enumPackage godef.Package, r *registry.Registry, model yaml.Model, fieldCasing cfg.Casing) ([]godef.StructField, error) {
+	allFields, fieldErr := getDirectGoFieldsForMorpheModel(enumPackage, r.GetAllEnums(), model.Fields, fieldCasing)
 	if fieldErr != nil {
 		return nil, fieldErr
 	}
 
-	allRelatedFields, relatedErr := getRelatedGoFieldsForMorpheModel(r, model.Related)
+	allRelatedFields, relatedErr := getRelatedGoFieldsForMorpheModel(r, model.Related, fieldCasing)
 	if relatedErr != nil {
 		return nil, relatedErr
 	}
@@ -118,14 +118,14 @@ func getGoFieldsForMorpheModel(enumPackage godef.Package, r *registry.Registry, 
 	return allFields, nil
 }
 
-func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[string]yaml.Enum, modelFields map[string]yaml.ModelField) ([]godef.StructField, error) {
+func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[string]yaml.Enum, modelFields map[string]yaml.ModelField, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allFieldNames := core.MapKeysSorted(modelFields)
 	for _, fieldName := range allFieldNames {
 		fieldDef := modelFields[fieldName]
 
-		goEnumField := getEnumFieldAsStructFieldType(enumPackage, allEnums, fieldName, string(fieldDef.Type))
+		goEnumField := getEnumFieldAsStructFieldType(enumPackage, allEnums, fieldName, string(fieldDef.Type), fieldCasing)
 		if goEnumField.Name != "" && goEnumField.Type != nil {
 			allFields = append(allFields, goEnumField)
 			continue
@@ -136,10 +136,7 @@ func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[str
 			return nil, ErrUnsupportedMorpheFieldType(fieldDef.Type)
 		}
 
-		var tags []string
-		if len(fieldDef.Attributes) > 0 {
-			tags = []string{fmt.Sprintf("morphe:\"%s\"", strings.Join(fieldDef.Attributes, ";"))}
-		}
+		tags := buildFieldTags(fieldName, fieldDef.Attributes, fieldCasing)
 
 		goField := godef.StructField{
 			Name: fieldName,
@@ -151,7 +148,25 @@ func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[str
 	return allFields, nil
 }
 
-func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[string]yaml.ModelRelation) ([]godef.StructField, error) {
+// buildFieldTags constructs the struct tags for a field
+func buildFieldTags(fieldName string, attributes []string, fieldCasing cfg.Casing) []string {
+	var tags []string
+
+	// Add morphe tag if there are attributes
+	if len(attributes) > 0 {
+		tags = append(tags, fmt.Sprintf("morphe:\"%s\"", strings.Join(attributes, ";")))
+	}
+
+	// Add JSON tag based on casing configuration
+	if fieldCasing != cfg.CasingNone {
+		jsonName := fieldCasing.Apply(fieldName)
+		tags = append(tags, fmt.Sprintf("json:\"%s\"", jsonName))
+	}
+
+	return tags
+}
+
+func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[string]yaml.ModelRelation, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allRelatedModelNames := core.MapKeysSorted(modelRelations)
@@ -171,6 +186,7 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 			typeField := godef.StructField{
 				Name: typeFieldName,
 				Type: godef.GoTypeString,
+				Tags: buildFieldTags(typeFieldName, nil, fieldCasing),
 			}
 			allFields = append(allFields, typeField)
 
@@ -179,6 +195,7 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 			idField := godef.StructField{
 				Name: idFieldName,
 				Type: godef.GoTypeString,
+				Tags: buildFieldTags(idFieldName, nil, fieldCasing),
 			}
 			allFields = append(allFields, idField)
 
@@ -218,13 +235,13 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 				return nil, relatedModelDefErr
 			}
 
-			goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type)
+			goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type, fieldCasing)
 			if goIDErr != nil {
 				return nil, goIDErr
 			}
 			allFields = append(allFields, goIDField)
 
-			goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type)
+			goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type, fieldCasing)
 			allFields = append(allFields, goRelatedField)
 			continue
 		}
@@ -246,19 +263,19 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 			return nil, fmt.Errorf("failed to get model '%s' for relation '%s': %w", targetModelName, relationshipName, relatedModelDefErr)
 		}
 
-		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type)
+		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type, fieldCasing)
 		if goIDErr != nil {
 			return nil, goIDErr
 		}
 		allFields = append(allFields, goIDField)
 
-		goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type)
+		goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type, fieldCasing)
 		allFields = append(allFields, goRelatedField)
 	}
 	return allFields, nil
 }
 
-func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName string, relatedModelDef yaml.Model, relationType string) (godef.StructField, error) {
+func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName string, relatedModelDef yaml.Model, relationType string, fieldCasing cfg.Casing) (godef.StructField, error) {
 	relatedPrimaryIDFieldName, relatedIDFieldNameErr := yamlops.GetModelPrimaryIdentifierFieldName(relatedModelDef)
 	if relatedIDFieldNameErr != nil {
 		return godef.StructField{}, fmt.Errorf("related %w", relatedIDFieldNameErr)
@@ -287,6 +304,7 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName 
 				IsSlice:   true,
 				ValueType: idFieldType,
 			},
+			Tags: buildFieldTags(idFieldName, nil, fieldCasing),
 		}, nil
 	}
 
@@ -295,10 +313,11 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName 
 		Type: godef.GoTypePointer{
 			ValueType: idFieldType,
 		},
+		Tags: buildFieldTags(idFieldName, nil, fieldCasing),
 	}, nil
 }
 
-func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, relationType string) godef.StructField {
+func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, relationType string, fieldCasing cfg.Casing) godef.StructField {
 	// Use relationship name for field naming (semantic)
 	fieldName := relationshipName
 	if yamlops.IsRelationMany(relationType) {
@@ -317,6 +336,7 @@ func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, r
 				IsSlice:   true,
 				ValueType: valueType,
 			},
+			Tags: buildFieldTags(fieldName, nil, fieldCasing),
 		}
 	}
 
@@ -325,10 +345,11 @@ func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, r
 		Type: godef.GoTypePointer{
 			ValueType: valueType,
 		},
+		Tags: buildFieldTags(fieldName, nil, fieldCasing),
 	}
 }
 
-func getEnumFieldAsStructFieldType(enumPackage godef.Package, allEnums map[string]yaml.Enum, fieldName string, enumName string) godef.StructField {
+func getEnumFieldAsStructFieldType(enumPackage godef.Package, allEnums map[string]yaml.Enum, fieldName string, enumName string, fieldCasing cfg.Casing) godef.StructField {
 	if len(allEnums) == 0 {
 		return godef.StructField{}
 	}
@@ -346,6 +367,7 @@ func getEnumFieldAsStructFieldType(enumPackage godef.Package, allEnums map[strin
 	goField := godef.StructField{
 		Name: fieldName,
 		Type: goFieldType,
+		Tags: buildFieldTags(fieldName, nil, fieldCasing),
 	}
 
 	return goField

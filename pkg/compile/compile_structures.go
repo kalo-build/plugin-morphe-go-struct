@@ -1,6 +1,8 @@
 package compile
 
 import (
+	"fmt"
+
 	"github.com/kalo-build/go-util/core"
 	"github.com/kalo-build/go/pkg/godef"
 	"github.com/kalo-build/morphe-go/pkg/registry"
@@ -56,7 +58,7 @@ func morpheStructureToGoStruct(config MorpheCompileConfig, r *registry.Registry,
 		Name:    structure.Name,
 	}
 
-	structFields, fieldsErr := getGoFieldsForMorpheStructure(config.MorpheEnumsConfig.Package, r, structure)
+	structFields, fieldsErr := getGoFieldsForMorpheStructure(config.MorpheEnumsConfig.Package, r, structure, config.MorpheStructuresConfig.FieldCasing)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -71,12 +73,12 @@ func morpheStructureToGoStruct(config MorpheCompileConfig, r *registry.Registry,
 	return &structureStruct, nil
 }
 
-func getGoFieldsForMorpheStructure(enumPackage godef.Package, r *registry.Registry, structure yaml.Structure) ([]godef.StructField, error) {
+func getGoFieldsForMorpheStructure(enumPackage godef.Package, r *registry.Registry, structure yaml.Structure, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	if r == nil {
 		return nil, ErrNoRegistry
 	}
 
-	allFields, fieldsErr := getDirectGoFieldsForMorpheStructure(enumPackage, r.GetAllEnums(), structure.Fields)
+	allFields, fieldsErr := getDirectGoFieldsForMorpheStructure(enumPackage, r.GetAllEnums(), structure.Fields, fieldCasing)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -84,14 +86,14 @@ func getGoFieldsForMorpheStructure(enumPackage godef.Package, r *registry.Regist
 	return allFields, nil
 }
 
-func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, allEnums map[string]yaml.Enum, structureFields map[string]yaml.StructureField) ([]godef.StructField, error) {
+func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, allEnums map[string]yaml.Enum, structureFields map[string]yaml.StructureField, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allFieldNames := core.MapKeysSorted(structureFields)
 	for _, fieldName := range allFieldNames {
 		fieldDef := structureFields[fieldName]
 
-		goEnumField := getEnumFieldAsStructFieldType(enumPackage, allEnums, fieldName, string(fieldDef.Type))
+		goEnumField := getEnumFieldAsStructFieldType(enumPackage, allEnums, fieldName, string(fieldDef.Type), fieldCasing)
 		if goEnumField.Name != "" && goEnumField.Type != nil {
 			allFields = append(allFields, goEnumField)
 			continue
@@ -102,10 +104,17 @@ func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, allEnums map
 			return nil, ErrUnsupportedMorpheFieldType(fieldDef.Type)
 		}
 
+		// For structures, Attributes are the raw tags (not morphe attributes)
+		tags := fieldDef.Attributes
+		// Add JSON tag if casing is configured
+		if fieldCasing != cfg.CasingNone {
+			jsonTag := fmt.Sprintf("json:\"%s\"", fieldCasing.Apply(fieldName))
+			tags = append(tags, jsonTag)
+		}
 		goField := godef.StructField{
 			Name: fieldName,
 			Type: goFieldType,
-			Tags: fieldDef.Attributes,
+			Tags: tags,
 		}
 		allFields = append(allFields, goField)
 	}

@@ -101,12 +101,13 @@ func getEntityStruct(config cfg.MorpheConfig, r *registry.Registry, entity yaml.
 
 func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, entity yaml.Entity) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
+	fieldCasing := config.MorpheEntitiesConfig.FieldCasing
 
 	allFieldNames := core.MapKeysSorted(entity.Fields)
 	// Handle direct fields
 	for _, fieldName := range allFieldNames {
 		entityField := entity.Fields[fieldName]
-		fieldType, fieldErr := getModelFieldType(config, r, entityField.Type)
+		fieldType, fieldErr := getModelFieldType(config, r, entityField.Type, fieldCasing)
 		if fieldErr != nil {
 			return nil, fieldErr
 		}
@@ -114,12 +115,13 @@ func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, e
 		field := godef.StructField{
 			Name: fieldName,
 			Type: fieldType,
+			Tags: buildFieldTags(fieldName, nil, fieldCasing),
 		}
 		allFields = append(allFields, field)
 	}
 
 	// Handle related entities
-	relatedFields, relatedErr := getRelatedGoFieldsForMorpheEntity(config, r, entity.Related)
+	relatedFields, relatedErr := getRelatedGoFieldsForMorpheEntity(config, r, entity.Related, fieldCasing)
 	if relatedErr != nil {
 		return nil, relatedErr
 	}
@@ -128,7 +130,7 @@ func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, e
 	return allFields, nil
 }
 
-func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, entityRelations map[string]yaml.EntityRelation) ([]godef.StructField, error) {
+func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, entityRelations map[string]yaml.EntityRelation, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allRelatedEntityNames := core.MapKeysSorted(entityRelations)
@@ -153,14 +155,14 @@ func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Regi
 			return nil, fmt.Errorf("failed to get target entity for relation %s: %w", relationshipName, entityErr)
 		}
 
-		idField, idErr := getRelatedGoFieldForEntityPrimaryID(config, r, relationshipName, targetEntity, relation.Type)
+		idField, idErr := getRelatedGoFieldForEntityPrimaryID(config, r, relationshipName, targetEntity, relation.Type, fieldCasing)
 		if idErr != nil {
 			return nil, idErr
 		}
 		allFields = append(allFields, idField)
 
 		// Add entity reference field
-		entityField, entityErr := getRelatedGoFieldForEntity(relationshipName, targetEntity, relation.Type)
+		entityField, entityErr := getRelatedGoFieldForEntity(relationshipName, targetEntity, relation.Type, fieldCasing)
 		if entityErr != nil {
 			return nil, entityErr
 		}
@@ -170,7 +172,7 @@ func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Regi
 	return allFields, nil
 }
 
-func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Registry, relationName string, targetEntity yaml.Entity, relationType string) (godef.StructField, error) {
+func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Registry, relationName string, targetEntity yaml.Entity, relationType string, fieldCasing cfg.Casing) (godef.StructField, error) {
 	primaryID, hasPrimary := targetEntity.Identifiers["primary"]
 	if !hasPrimary {
 		return godef.StructField{}, fmt.Errorf("related entity %s has no primary identifier", targetEntity.Name)
@@ -186,7 +188,7 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 		return godef.StructField{}, fmt.Errorf("related entity %s primary identifier field %s not found", targetEntity.Name, targetPrimaryIdName)
 	}
 
-	fieldType, fieldErr := getModelFieldType(config, r, targetPrimaryIdField.Type)
+	fieldType, fieldErr := getModelFieldType(config, r, targetPrimaryIdField.Type, fieldCasing)
 	if fieldErr != nil {
 		return godef.StructField{}, fieldErr
 	}
@@ -200,6 +202,7 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 				IsSlice:   true,
 				ValueType: fieldType,
 			},
+			Tags: buildFieldTags(fieldName, nil, fieldCasing),
 		}, nil
 	}
 
@@ -208,10 +211,11 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 		Type: godef.GoTypePointer{
 			ValueType: fieldType,
 		},
+		Tags: buildFieldTags(fieldName, nil, fieldCasing),
 	}, nil
 }
 
-func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, relationType string) (godef.StructField, error) {
+func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, relationType string, fieldCasing cfg.Casing) (godef.StructField, error) {
 	var fieldType godef.GoType
 	fieldName := relationName
 
@@ -236,10 +240,11 @@ func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, r
 	return godef.StructField{
 		Name: fieldName,
 		Type: fieldType,
+		Tags: buildFieldTags(fieldName, nil, fieldCasing),
 	}, nil
 }
 
-func getModelFieldType(config cfg.MorpheConfig, r *registry.Registry, fieldType yaml.ModelFieldPath) (godef.GoType, error) {
+func getModelFieldType(config cfg.MorpheConfig, r *registry.Registry, fieldType yaml.ModelFieldPath, fieldCasing cfg.Casing) (godef.GoType, error) {
 	fieldPath := strings.Split(string(fieldType), ".")
 	if len(fieldPath) < 2 {
 		return nil, fmt.Errorf("invalid field type path: %s", fieldType)
@@ -282,6 +287,7 @@ func getModelFieldType(config cfg.MorpheConfig, r *registry.Registry, fieldType 
 		r.GetAllEnums(),
 		terminalFieldName,
 		string(terminalField.Type),
+		fieldCasing,
 	)
 	if goEnumField.Name != "" && goEnumField.Type != nil {
 		return goEnumField.Type, nil

@@ -11,6 +11,10 @@ type MorpheModelsConfig struct {
 
 	// ReceiverName is the standard receiver name for the compiled model receiver methods, ie "m" in "func (m *MyModel) MyMethod(){}"
 	ReceiverName string
+
+	// FieldCasing specifies the casing for serialization (JSON struct tags). Empty means no tags.
+	// Valid values: "camel", "snake", "pascal", or "" (none)
+	FieldCasing Casing
 }
 
 func (config MorpheModelsConfig) Validate() error {
@@ -22,6 +26,9 @@ func (config MorpheModelsConfig) Validate() error {
 	}
 	if config.ReceiverName == "" {
 		return fmt.Errorf("models %w", ErrNoReceiverName)
+	}
+	if !config.FieldCasing.IsValid() {
+		return fmt.Errorf("models: invalid fieldCasing value %q, must be one of: camel, snake, pascal, or empty", config.FieldCasing)
 	}
 	return nil
 }
