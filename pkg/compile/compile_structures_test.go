@@ -137,7 +137,7 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct() {
 	structField9 := structFields[9]
 	suite.Equal(structField9.Name, "UUID")
 	suite.Equal(structField9.Type, godef.GoTypeString)
-	suite.Equal(structField9.Tags, []string{"immutable"})
+	suite.Equal(structField9.Tags, []string{`morphe:"immutable"`})
 
 	suite.Len(structureStruct.Imports, 1)
 	suite.Equal(structureStruct.Imports[0], "time")

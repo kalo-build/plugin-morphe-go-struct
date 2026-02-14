@@ -202,7 +202,8 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs() {
 	tsField07 := structFields0[7]
 	suite.Equal("UUID", tsField07.Name)
 	suite.Equal(godef.GoTypeString, tsField07.Type)
-	suite.Len(tsField07.Tags, 0)
+	suite.Len(tsField07.Tags, 1)
+	suite.Equal(`morphe:"immutable"`, tsField07.Tags[0])
 
 	goStruct1 := allGoStructs[1]
 	suite.Equal(goStruct1.Package.Path, entitiesConfig.Package.Path)
@@ -215,6 +216,8 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs() {
 	structFields10 := structFields1[0]
 	suite.Equal(structFields10.Name, "UUID")
 	suite.Equal(structFields10.Type, godef.GoTypeString)
+	suite.Len(structFields10.Tags, 1)
+	suite.Equal(`morphe:"immutable"`, structFields10.Tags[0])
 }
 
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_NoEntityName() {
@@ -546,7 +549,8 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_EnumField() {
 	field01 := structFields0[1]
 	suite.Equal(field01.Name, "UUID")
 	suite.Equal(field01.Type, godef.GoTypeString)
-	suite.Len(field01.Tags, 0)
+	suite.Len(field01.Tags, 1)
+	suite.Equal(`morphe:"immutable"`, field01.Tags[0])
 
 	goStruct1 := allGoStructs[1]
 	suite.Equal(goStruct1.Package.Path, entitiesConfig.Package.Path)

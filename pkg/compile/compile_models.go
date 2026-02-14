@@ -127,6 +127,9 @@ func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[str
 
 		goEnumField := getEnumFieldAsStructFieldType(enumPackage, allEnums, fieldName, string(fieldDef.Type), fieldCasing)
 		if goEnumField.Name != "" && goEnumField.Type != nil {
+			if hasAttribute(fieldDef.Attributes, "optional") {
+				goEnumField.Type = godef.GoTypePointer{ValueType: goEnumField.Type}
+			}
 			allFields = append(allFields, goEnumField)
 			continue
 		}
@@ -134,6 +137,11 @@ func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[str
 		goFieldType, typeSupported := typemap.MorpheModelFieldToGoField[fieldDef.Type]
 		if !typeSupported {
 			return nil, ErrUnsupportedMorpheFieldType(fieldDef.Type)
+		}
+
+		// Model fields are required by default; wrap in pointer for "optional" attribute
+		if hasAttribute(fieldDef.Attributes, "optional") {
+			goFieldType = godef.GoTypePointer{ValueType: goFieldType}
 		}
 
 		tags := buildFieldTags(fieldName, fieldDef.Attributes, fieldCasing)
@@ -146,6 +154,16 @@ func getDirectGoFieldsForMorpheModel(enumPackage godef.Package, allEnums map[str
 		allFields = append(allFields, goField)
 	}
 	return allFields, nil
+}
+
+// hasAttribute checks if the given attribute is present in the attributes list.
+func hasAttribute(attributes []string, attr string) bool {
+	for _, a := range attributes {
+		if a == attr {
+			return true
+		}
+	}
+	return false
 }
 
 // buildFieldTags constructs the struct tags for a field

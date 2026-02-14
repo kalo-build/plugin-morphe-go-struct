@@ -1,5 +1,5 @@
 package entities
 
 type CompanyIDPrimary struct {
-	ID uint
+	ID uint `morphe:"immutable"`
 }

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile"
+	"github.com/kalo-build/plugin-morphe-go-struct/pkg/compile/cfg"
 )
 
 type CompileConfigEntryStruct struct {
@@ -19,6 +20,10 @@ type CompileConfigEntryEnum struct {
 }
 
 type CompileConfigEntries struct {
+	// FieldCasing applies to all sections (models, structures, entities).
+	// Valid values: "camel", "snake", "pascal", or "" (none / no JSON tags).
+	FieldCasing string `json:"fieldCasing,omitempty"`
+
 	Models     CompileConfigEntryStruct `json:"models"`
 	Enums      CompileConfigEntryEnum   `json:"enums"`
 	Structures CompileConfigEntryStruct `json:"structures"`
@@ -130,6 +135,15 @@ func main() {
 	}
 	if compileConfig.Config.Entities.ReceiverName != "" {
 		morpheConfig.MorpheEntitiesConfig.ReceiverName = compileConfig.Config.Entities.ReceiverName
+	}
+
+	// Set field casing for JSON struct tags (applies to all sections)
+	if compileConfig.Config.FieldCasing != "" {
+		casing := cfg.Casing(compileConfig.Config.FieldCasing)
+		logInfo(compileConfig.Verbose, "Setting field casing to: %s", casing)
+		morpheConfig.MorpheModelsConfig.FieldCasing = casing
+		morpheConfig.MorpheStructuresConfig.FieldCasing = casing
+		morpheConfig.MorpheEntitiesConfig.FieldCasing = casing
 	}
 
 	logInfo(compileConfig.Verbose, "Starting compilation process...")

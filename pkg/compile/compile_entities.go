@@ -112,10 +112,15 @@ func getGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Registry, e
 			return nil, fieldErr
 		}
 
+		// Entity fields are required by default; wrap in pointer for "optional" attribute
+		if hasAttribute(entityField.Attributes, "optional") {
+			fieldType = godef.GoTypePointer{ValueType: fieldType}
+		}
+
 		field := godef.StructField{
 			Name: fieldName,
 			Type: fieldType,
-			Tags: buildFieldTags(fieldName, nil, fieldCasing),
+			Tags: buildFieldTags(fieldName, entityField.Attributes, fieldCasing),
 		}
 		allFields = append(allFields, field)
 	}

@@ -1,8 +1,6 @@
 package compile
 
 import (
-	"fmt"
-
 	"github.com/kalo-build/go-util/core"
 	"github.com/kalo-build/go/pkg/godef"
 	"github.com/kalo-build/morphe-go/pkg/registry"
@@ -104,13 +102,12 @@ func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, allEnums map
 			return nil, ErrUnsupportedMorpheFieldType(fieldDef.Type)
 		}
 
-		// For structures, Attributes are the raw tags (not morphe attributes)
-		tags := fieldDef.Attributes
-		// Add JSON tag if casing is configured
-		if fieldCasing != cfg.CasingNone {
-			jsonTag := fmt.Sprintf("json:\"%s\"", fieldCasing.Apply(fieldName))
-			tags = append(tags, jsonTag)
+		// Check for "optional" attribute: wrap type in pointer
+		if hasAttribute(fieldDef.Attributes, "optional") {
+			goFieldType = godef.GoTypePointer{ValueType: goFieldType}
 		}
+
+		tags := buildFieldTags(fieldName, fieldDef.Attributes, fieldCasing)
 		goField := godef.StructField{
 			Name: fieldName,
 			Type: goFieldType,

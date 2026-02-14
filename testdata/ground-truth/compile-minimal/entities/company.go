@@ -1,7 +1,7 @@
 package entities
 
 type Company struct {
-	ID        uint
+	ID        uint `morphe:"immutable"`
 	Name      string
 	TaxID     string
 	PersonIDs []uint

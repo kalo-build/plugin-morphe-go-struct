@@ -6,7 +6,7 @@ import (
 
 type Person struct {
 	Email       string
-	ID          uint
+	ID          uint `morphe:"immutable"`
 	LastName    string
 	Nationality enums.Nationality
 	CompanyID   *uint
