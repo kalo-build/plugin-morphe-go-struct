@@ -2457,6 +2457,310 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasMa
 	})
 }
 
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOnePoly_OnEntity() {
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: cfg.MorpheModelsConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/models",
+					Name: "models",
+				},
+				ReceiverName: "m",
+			},
+			MorpheStructuresConfig: cfg.MorpheStructuresConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/structures",
+					Name: "structures",
+				},
+				ReceiverName: "s",
+			},
+			MorpheEnumsConfig: cfg.MorpheEnumsConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/enums",
+					Name: "enums",
+				},
+			},
+			MorpheEntitiesConfig: cfg.MorpheEntitiesConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/entities",
+					Name: "entities",
+				},
+				ReceiverName: "e",
+			},
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	commentEntity := yaml.Entity{
+		Name: "Comment",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Comment.ID",
+			},
+			"Content": {
+				Type: "Comment.Content",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	commentModel := yaml.Model{
+		Name: "Comment",
+		Fields: map[string]yaml.ModelField{
+			"ID":      {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Content": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Commentable": {
+				Type: "ForOnePoly",
+				For:  []string{"Post", "Article"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeUUID},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	articleModel := yaml.Model{
+		Name: "Article",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeUUID},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	postEntity := yaml.Entity{
+		Name: "Post",
+		Fields: map[string]yaml.EntityField{
+			"ID": {Type: "Post.ID"},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	articleEntity := yaml.Entity{
+		Name: "Article",
+		Fields: map[string]yaml.EntityField{
+			"ID": {Type: "Article.ID"},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Comment", commentModel)
+	r.SetModel("Post", postModel)
+	r.SetModel("Article", articleModel)
+	r.SetEntity("Comment", commentEntity)
+	r.SetEntity("Post", postEntity)
+	r.SetEntity("Article", articleEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, commentEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Comment")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "Content")
+	suite.Equal(field00.Type, godef.GoTypeString)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "ID")
+	suite.Equal(field01.Type, godef.GoTypeUint)
+
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "CommentableType")
+	suite.Equal(field02.Type, godef.GoTypeString)
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "CommentableID")
+	suite.Equal(field03.Type, godef.GoTypeString)
+}
+
+func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForManyPoly_OnEntity() {
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheModelsConfig: cfg.MorpheModelsConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/models",
+					Name: "models",
+				},
+				ReceiverName: "m",
+			},
+			MorpheStructuresConfig: cfg.MorpheStructuresConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/structures",
+					Name: "structures",
+				},
+				ReceiverName: "s",
+			},
+			MorpheEnumsConfig: cfg.MorpheEnumsConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/enums",
+					Name: "enums",
+				},
+			},
+			MorpheEntitiesConfig: cfg.MorpheEntitiesConfig{
+				Package: godef.Package{
+					Path: "github.com/kalo-build/project/domain/entities",
+					Name: "entities",
+				},
+				ReceiverName: "e",
+			},
+		},
+		EntityHooks: hook.CompileMorpheEntity{},
+	}
+
+	tagEntity := yaml.Entity{
+		Name: "Tag",
+		Fields: map[string]yaml.EntityField{
+			"ID": {
+				Type: "Tag.ID",
+			},
+			"Name": {
+				Type: "Tag.Name",
+			},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {
+				Fields: []string{"ID"},
+			},
+		},
+		Related: map[string]yaml.EntityRelation{
+			"Taggable": {
+				Type: "ForManyPoly",
+				For:  []string{"Post", "Product"},
+			},
+		},
+	}
+
+	tagModel := yaml.Model{
+		Name: "Tag",
+		Fields: map[string]yaml.ModelField{
+			"ID":   {Type: yaml.ModelFieldTypeAutoIncrement},
+			"Name": {Type: yaml.ModelFieldTypeString},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+		Related: map[string]yaml.ModelRelation{
+			"Taggable": {
+				Type: "ForManyPoly",
+				For:  []string{"Post", "Product"},
+			},
+		},
+	}
+
+	postModel := yaml.Model{
+		Name: "Post",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeUUID},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	productModel := yaml.Model{
+		Name: "Product",
+		Fields: map[string]yaml.ModelField{
+			"ID": {Type: yaml.ModelFieldTypeAutoIncrement},
+		},
+		Identifiers: map[string]yaml.ModelIdentifier{
+			"primary": {Fields: []string{"id"}},
+		},
+	}
+
+	postEntity := yaml.Entity{
+		Name: "Post",
+		Fields: map[string]yaml.EntityField{
+			"ID": {Type: "Post.ID"},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	productEntity := yaml.Entity{
+		Name: "Product",
+		Fields: map[string]yaml.EntityField{
+			"ID": {Type: "Product.ID"},
+		},
+		Identifiers: map[string]yaml.EntityIdentifier{
+			"primary": {Fields: []string{"ID"}},
+		},
+		Related: map[string]yaml.EntityRelation{},
+	}
+
+	r := registry.NewRegistry()
+	r.SetModel("Tag", tagModel)
+	r.SetModel("Post", postModel)
+	r.SetModel("Product", productModel)
+	r.SetEntity("Tag", tagEntity)
+	r.SetEntity("Post", postEntity)
+	r.SetEntity("Product", productEntity)
+
+	allGoStructs, goStructErr := compile.MorpheEntityToGoStructs(config.EntityHooks, config.MorpheConfig, r, tagEntity)
+
+	suite.Nil(goStructErr)
+	suite.Len(allGoStructs, 2)
+
+	goStruct0 := allGoStructs[0]
+	suite.Equal(goStruct0.Name, "Tag")
+
+	structFields0 := goStruct0.Fields
+	suite.Len(structFields0, 4)
+
+	field00 := structFields0[0]
+	suite.Equal(field00.Name, "ID")
+	suite.Equal(field00.Type, godef.GoTypeUint)
+
+	field01 := structFields0[1]
+	suite.Equal(field01.Name, "Name")
+	suite.Equal(field01.Type, godef.GoTypeString)
+
+	field02 := structFields0[2]
+	suite.Equal(field02.Name, "TaggableType")
+	suite.Equal(field02.Type, godef.GoTypeString)
+
+	field03 := structFields0[3]
+	suite.Equal(field03.Name, "TaggableID")
+	suite.Equal(field03.Type, godef.GoTypeString)
+}
+
 func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Mixed_Polymorphic_And_Regular() {
 	modelsConfig := cfg.MorpheModelsConfig{
 		Package: godef.Package{

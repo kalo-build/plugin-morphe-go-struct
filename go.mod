@@ -5,14 +5,15 @@ go 1.21.6
 require (
 	github.com/kalo-build/clone v0.0.0-20250329082958-41db0353412f
 	github.com/kalo-build/go v0.0.0-20250329083200-af53fba2b8e5
-	github.com/kalo-build/go-util v0.0.0-20260212100112-6d1442f6a5b6
-	github.com/kalo-build/morphe-go v0.0.0-20251016080731-9aae9ab2af3e
+	github.com/kalo-build/go-util v0.0.0-20260312091936-ee39e432fcc2
+	github.com/kalo-build/morphe-go v0.0.0-20260312144523-0841ef1ee9f8
 	github.com/stretchr/testify v1.9.0
 )
 
 require (
 	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/gobeam/stringy v0.0.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

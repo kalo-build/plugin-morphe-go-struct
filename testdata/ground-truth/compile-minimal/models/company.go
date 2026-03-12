@@ -11,7 +11,7 @@ type Company struct {
 	NoteIDs          []uint
 	Notes            []Comment
 	PersonIDs        []uint
-	Persons          []Person
+	People           []Person
 }
 
 func (m Company) GetIDName() CompanyIDName {

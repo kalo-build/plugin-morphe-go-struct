@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kalo-build/go-util/core"
+	"github.com/kalo-build/go-util/inflect"
 
 	"github.com/kalo-build/go/pkg/godef"
 	"github.com/kalo-build/morphe-go/pkg/registry"
@@ -142,6 +143,34 @@ func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Regi
 	for _, relationshipName := range allRelatedEntityNames {
 		relation := entityRelations[relationshipName]
 
+		if yamlops.IsRelationPoly(relation.Type) && yamlops.IsRelationFor(relation.Type) {
+			if len(relation.For) == 0 {
+				return nil, fmt.Errorf("polymorphic relation '%s' must have at least one entity in 'for' property", relationshipName)
+			}
+			typeFieldName := relationshipName + "Type"
+			typeFieldType := godef.GoType(godef.GoTypeString)
+			idFieldName := relationshipName + "ID"
+			idFieldType := godef.GoType(godef.GoTypeString)
+			if hasAttribute(relation.Attributes, "optional") {
+				typeFieldType = godef.GoTypePointer{ValueType: godef.GoTypeString}
+				idFieldType = godef.GoTypePointer{ValueType: godef.GoTypeString}
+			}
+			typeField := godef.StructField{
+				Name: typeFieldName,
+				Type: typeFieldType,
+				Tags: buildFieldTags(typeFieldName, nil, fieldCasing),
+			}
+			allFields = append(allFields, typeField)
+
+			idField := godef.StructField{
+				Name: idFieldName,
+				Type: idFieldType,
+				Tags: buildFieldTags(idFieldName, nil, fieldCasing),
+			}
+			allFields = append(allFields, idField)
+			continue
+		}
+
 		// Resolve actual target entity name (handles aliasing)
 		targetAlias := yamlops.GetRelationTargetName(relationshipName, relation.Aliased)
 
@@ -160,14 +189,14 @@ func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Regi
 			return nil, fmt.Errorf("failed to get target entity for relation %s: %w", relationshipName, entityErr)
 		}
 
-		idField, idErr := getRelatedGoFieldForEntityPrimaryID(config, r, relationshipName, targetEntity, relation.Type, fieldCasing)
+		idField, idErr := getRelatedGoFieldForEntityPrimaryID(config, r, relationshipName, targetEntity, relation, fieldCasing)
 		if idErr != nil {
 			return nil, idErr
 		}
 		allFields = append(allFields, idField)
 
 		// Add entity reference field
-		entityField, entityErr := getRelatedGoFieldForEntity(relationshipName, targetEntity, relation.Type, fieldCasing)
+		entityField, entityErr := getRelatedGoFieldForEntity(relationshipName, targetEntity, relation, fieldCasing)
 		if entityErr != nil {
 			return nil, entityErr
 		}
@@ -177,7 +206,7 @@ func getRelatedGoFieldsForMorpheEntity(config cfg.MorpheConfig, r *registry.Regi
 	return allFields, nil
 }
 
-func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Registry, relationName string, targetEntity yaml.Entity, relationType string, fieldCasing cfg.Casing) (godef.StructField, error) {
+func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Registry, relationName string, targetEntity yaml.Entity, relation yaml.EntityRelation, fieldCasing cfg.Casing) (godef.StructField, error) {
 	primaryID, hasPrimary := targetEntity.Identifiers["primary"]
 	if !hasPrimary {
 		return godef.StructField{}, fmt.Errorf("related entity %s has no primary identifier", targetEntity.Name)
@@ -199,7 +228,7 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 	}
 
 	fieldName := relationName + "ID"
-	if yamlops.IsRelationMany(relationType) {
+	if yamlops.IsRelationMany(relation.Type) {
 		fieldName += "s"
 		return godef.StructField{
 			Name: fieldName,
@@ -211,27 +240,34 @@ func getRelatedGoFieldForEntityPrimaryID(config cfg.MorpheConfig, r *registry.Re
 		}, nil
 	}
 
+	oneFieldType := godef.GoType(fieldType)
+	if hasAttribute(relation.Attributes, "optional") {
+		oneFieldType = godef.GoTypePointer{ValueType: fieldType}
+	}
 	return godef.StructField{
 		Name: fieldName,
-		Type: godef.GoTypePointer{
-			ValueType: fieldType,
-		},
+		Type: oneFieldType,
 		Tags: buildFieldTags(fieldName, nil, fieldCasing),
 	}, nil
 }
 
-func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, relationType string, fieldCasing cfg.Casing) (godef.StructField, error) {
+func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, relation yaml.EntityRelation, fieldCasing cfg.Casing) (godef.StructField, error) {
 	var fieldType godef.GoType
 	fieldName := relationName
 
-	if yamlops.IsRelationOne(relationType) {
-		fieldType = godef.GoTypePointer{
-			ValueType: godef.GoTypeStruct{
-				Name: targetEntity.Name,
-			},
+	if yamlops.IsRelationOne(relation.Type) {
+		fieldType = godef.GoType(godef.GoTypeStruct{
+			Name: targetEntity.Name,
+		})
+		if hasAttribute(relation.Attributes, "optional") {
+			fieldType = godef.GoTypePointer{
+				ValueType: godef.GoTypeStruct{
+					Name: targetEntity.Name,
+				},
+			}
 		}
-	} else if yamlops.IsRelationMany(relationType) {
-		fieldName += "s"
+	} else if yamlops.IsRelationMany(relation.Type) {
+		fieldName = inflect.Plural(fieldName)
 		fieldType = godef.GoTypeArray{
 			IsSlice: true,
 			ValueType: godef.GoTypeStruct{
@@ -239,7 +275,7 @@ func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, r
 			},
 		}
 	} else {
-		return godef.StructField{}, fmt.Errorf("unknown entity relation type: %s", relationType)
+		return godef.StructField{}, fmt.Errorf("unknown entity relation type: %s", relation.Type)
 	}
 
 	return godef.StructField{

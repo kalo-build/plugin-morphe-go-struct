@@ -7,6 +7,7 @@ import (
 
 	"github.com/kalo-build/clone"
 	"github.com/kalo-build/go-util/core"
+	"github.com/kalo-build/go-util/inflect"
 	"github.com/kalo-build/go/pkg/godef"
 	"github.com/kalo-build/morphe-go/pkg/registry"
 	"github.com/kalo-build/morphe-go/pkg/yaml"
@@ -339,7 +340,7 @@ func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, r
 	// Use relationship name for field naming (semantic)
 	fieldName := relationshipName
 	if yamlops.IsRelationMany(relationType) {
-		fieldName += "s"
+		fieldName = inflect.Plural(fieldName)
 	}
 
 	// Use target model name for struct type reference
