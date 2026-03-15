@@ -4,9 +4,9 @@ type Company struct {
 	ID               uint
 	Name             string
 	TaxID            string
-	MailingContactID *uint
+	MailingContactID uint
 	MailingContact   *Contact
-	MainContactID    *uint
+	MainContactID    uint
 	MainContact      *Contact
 	NoteIDs          []uint
 	Notes            []Comment

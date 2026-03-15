@@ -3,9 +3,9 @@ package models
 type ContactInfo struct {
 	Email            string
 	ID               uint
-	PersonID         *uint
+	PersonID         uint
 	Person           *Person
-	RelatedContactID *uint
+	RelatedContactID uint
 	RelatedContact   *Contact
 }
 

@@ -809,9 +809,7 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_ForOn
 
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "BasicParentID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "BasicParent")
@@ -1171,9 +1169,7 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOn
 
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "BasicID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "Basic")
@@ -2277,9 +2273,7 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOn
 	// HasOnePoly generates regular relationship fields
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "NoteID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "Note")
@@ -2920,9 +2914,7 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Mixed_Polymor
 	// Regular relationship fields
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "UserID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "User")
@@ -3206,9 +3198,7 @@ func (suite *CompileEntitiesTestSuite) TestMorpheEntityToGoStructs_Related_HasOn
 
 	// Aliased polymorphic relationship uses the field name
 	suite.Equal("FeaturedCommentID", structFields0[2].Name)
-	suite.Equal(godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	}, structFields0[2].Type)
+	suite.Equal(godef.GoTypeUint, structFields0[2].Type)
 
 	suite.Equal("FeaturedComment", structFields0[3].Name)
 	suite.Equal(godef.GoTypePointer{

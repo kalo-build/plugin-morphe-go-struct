@@ -256,15 +256,10 @@ func getRelatedGoFieldForEntity(relationName string, targetEntity yaml.Entity, r
 	fieldName := relationName
 
 	if yamlops.IsRelationOne(relation.Type) {
-		fieldType = godef.GoType(godef.GoTypeStruct{
-			Name: targetEntity.Name,
-		})
-		if hasAttribute(relation.Attributes, "optional") {
-			fieldType = godef.GoTypePointer{
-				ValueType: godef.GoTypeStruct{
-					Name: targetEntity.Name,
-				},
-			}
+		fieldType = godef.GoTypePointer{
+			ValueType: godef.GoTypeStruct{
+				Name: targetEntity.Name,
+			},
 		}
 	} else if yamlops.IsRelationMany(relation.Type) {
 		fieldName = inflect.Plural(fieldName)

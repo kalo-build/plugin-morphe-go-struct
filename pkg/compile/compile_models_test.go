@@ -1151,9 +1151,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne()
 
 	structFields02 := structFields0[2]
 	suite.Equal(structFields02.Name, "BasicParentID")
-	suite.Equal(structFields02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(structFields02.Type, godef.GoTypeUint)
 
 	structFields03 := structFields0[3]
 	suite.Equal(structFields03.Name, "BasicParent")
@@ -1363,9 +1361,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOne()
 
 	structFields02 := structFields0[2]
 	suite.Equal(structFields02.Name, "BasicID")
-	suite.Equal(structFields02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(structFields02.Type, godef.GoTypeUint)
 	suite.Len(structFields02.Tags, 0)
 
 	structFields03 := structFields0[3]
@@ -1751,9 +1747,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOnePo
 	// Has* polymorphic generates regular ID and struct fields
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "CommentID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "Comment")
@@ -1925,9 +1919,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_HasOnePo
 	// Has* polymorphic generates regular ID and struct fields using relationship name
 	field02 := structFields0[2]
 	suite.Equal(field02.Name, "CommentID")
-	suite.Equal(field02.Type, godef.GoTypePointer{
-		ValueType: godef.GoTypeUint,
-	})
+	suite.Equal(field02.Type, godef.GoTypeUint)
 
 	field03 := structFields0[3]
 	suite.Equal(field03.Name, "Comment")
@@ -2257,7 +2249,7 @@ func (suite *CompileModelsTestSuite) TestMorpheModelToGoStructs_Related_ForOne_A
 
 	// Aliased relationship fields use the relationship name
 	suite.Equal("PersonalContactID", structFields0[2].Name)
-	suite.Equal(godef.GoTypePointer{ValueType: godef.GoTypeUint}, structFields0[2].Type)
+	suite.Equal(godef.GoTypeUint, structFields0[2].Type)
 
 	suite.Equal("PersonalContact", structFields0[3].Name)
 	suite.Equal(godef.GoTypePointer{

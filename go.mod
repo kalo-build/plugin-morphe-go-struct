@@ -6,7 +6,7 @@ require (
 	github.com/kalo-build/clone v0.0.0-20250329082958-41db0353412f
 	github.com/kalo-build/go v0.0.0-20250329083200-af53fba2b8e5
 	github.com/kalo-build/go-util v0.0.0-20260312091936-ee39e432fcc2
-	github.com/kalo-build/morphe-go v0.0.0-20260312144523-0841ef1ee9f8
+	github.com/kalo-build/morphe-go v0.0.0-20260315110949-bffc845469fb
 	github.com/stretchr/testify v1.9.0
 )
 

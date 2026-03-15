@@ -3,6 +3,7 @@ package compile
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/kalo-build/go-util/strcase"
 	"github.com/kalo-build/go/pkg/godef"
@@ -73,6 +74,18 @@ func getIdentifierStructFieldSubset(
 	identifierFieldDefs := []godef.StructField{}
 
 	for _, fieldName := range fields {
+		if strings.HasPrefix(fieldName, "rel:") {
+			relationName := strings.TrimPrefix(fieldName, "rel:")
+			idField, found := findStructFieldByName(parentStruct.Fields, relationName+"ID")
+			if !found {
+				return nil, fmt.Errorf("identifier %s references relation '%s' but field '%sID' not found on struct", identifierName, relationName, relationName)
+			}
+			identifierFieldDefs = append(identifierFieldDefs, idField)
+			if typeField, hasType := findStructFieldByName(parentStruct.Fields, relationName+"Type"); hasType {
+				identifierFieldDefs = append(identifierFieldDefs, typeField)
+			}
+			continue
+		}
 		field, found := findStructFieldByName(parentStruct.Fields, fieldName)
 		if !found {
 			return nil, fmt.Errorf("identifier %s references unknown field: %s", identifierName, fieldName)

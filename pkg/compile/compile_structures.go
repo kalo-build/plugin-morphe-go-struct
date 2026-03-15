@@ -46,7 +46,7 @@ func morpheStructureToGoStruct(config MorpheCompileConfig, r *registry.Registry,
 	if validateConfigErr != nil {
 		return nil, validateConfigErr
 	}
-	validateMorpheErr := structure.Validate(r.GetAllEnums())
+	validateMorpheErr := structure.Validate(r.GetAllEnums(), r.GetAllStructures())
 	if validateMorpheErr != nil {
 		return nil, validateMorpheErr
 	}
@@ -56,7 +56,7 @@ func morpheStructureToGoStruct(config MorpheCompileConfig, r *registry.Registry,
 		Name:    structure.Name,
 	}
 
-	structFields, fieldsErr := getGoFieldsForMorpheStructure(config.MorpheEnumsConfig.Package, r, structure, config.MorpheStructuresConfig.FieldCasing)
+	structFields, fieldsErr := getGoFieldsForMorpheStructure(config.MorpheEnumsConfig.Package, config.MorpheStructuresConfig.Package, r, structure, config.MorpheStructuresConfig.FieldCasing)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -71,12 +71,12 @@ func morpheStructureToGoStruct(config MorpheCompileConfig, r *registry.Registry,
 	return &structureStruct, nil
 }
 
-func getGoFieldsForMorpheStructure(enumPackage godef.Package, r *registry.Registry, structure yaml.Structure, fieldCasing cfg.Casing) ([]godef.StructField, error) {
+func getGoFieldsForMorpheStructure(enumPackage godef.Package, structurePackage godef.Package, r *registry.Registry, structure yaml.Structure, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	if r == nil {
 		return nil, ErrNoRegistry
 	}
 
-	allFields, fieldsErr := getDirectGoFieldsForMorpheStructure(enumPackage, r.GetAllEnums(), structure.Fields, fieldCasing)
+	allFields, fieldsErr := getDirectGoFieldsForMorpheStructure(enumPackage, structurePackage, r.GetAllEnums(), r.GetAllStructures(), structure.Fields, fieldCasing)
 	if fieldsErr != nil {
 		return nil, fieldsErr
 	}
@@ -84,7 +84,7 @@ func getGoFieldsForMorpheStructure(enumPackage godef.Package, r *registry.Regist
 	return allFields, nil
 }
 
-func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, allEnums map[string]yaml.Enum, structureFields map[string]yaml.StructureField, fieldCasing cfg.Casing) ([]godef.StructField, error) {
+func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, structurePackage godef.Package, allEnums map[string]yaml.Enum, allStructures map[string]yaml.Structure, structureFields map[string]yaml.StructureField, fieldCasing cfg.Casing) ([]godef.StructField, error) {
 	allFields := []godef.StructField{}
 
 	allFieldNames := core.MapKeysSorted(structureFields)
@@ -95,6 +95,26 @@ func getDirectGoFieldsForMorpheStructure(enumPackage godef.Package, allEnums map
 		if goEnumField.Name != "" && goEnumField.Type != nil {
 			allFields = append(allFields, goEnumField)
 			continue
+		}
+
+		// Structure composition: field type references another structure (same package)
+		if allStructures != nil {
+			if _, ok := allStructures[string(fieldDef.Type)]; ok {
+				structRefType := godef.GoType(godef.GoTypeStruct{
+					PackagePath: structurePackage.Path,
+					Name:        string(fieldDef.Type),
+				})
+				if hasAttribute(fieldDef.Attributes, "optional") {
+					structRefType = godef.GoTypePointer{ValueType: structRefType}
+				}
+				tags := buildFieldTags(fieldName, fieldDef.Attributes, fieldCasing)
+				allFields = append(allFields, godef.StructField{
+					Name: fieldName,
+					Type: structRefType,
+					Tags: tags,
+				})
+				continue
+			}
 		}
 
 		goFieldType, typeSupported := typemap.MorpheStructureFieldToGoField[fieldDef.Type]

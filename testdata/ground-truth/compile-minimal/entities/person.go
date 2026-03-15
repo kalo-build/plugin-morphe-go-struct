@@ -9,7 +9,7 @@ type Person struct {
 	ID          uint `morphe:"immutable"`
 	LastName    string
 	Nationality enums.Nationality
-	CompanyID   *uint
+	CompanyID   uint
 	Company     *Company
 }
 

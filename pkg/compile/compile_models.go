@@ -254,13 +254,13 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 				return nil, relatedModelDefErr
 			}
 
-			goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type, fieldCasing)
+			goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef, fieldCasing)
 			if goIDErr != nil {
 				return nil, goIDErr
 			}
 			allFields = append(allFields, goIDField)
 
-			goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type, fieldCasing)
+			goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef, fieldCasing)
 			allFields = append(allFields, goRelatedField)
 			continue
 		}
@@ -282,19 +282,19 @@ func getRelatedGoFieldsForMorpheModel(r *registry.Registry, modelRelations map[s
 			return nil, fmt.Errorf("failed to get model '%s' for relation '%s': %w", targetModelName, relationshipName, relatedModelDefErr)
 		}
 
-		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef.Type, fieldCasing)
+		goIDField, goIDErr := getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName, relatedModelDef, relationDef, fieldCasing)
 		if goIDErr != nil {
 			return nil, goIDErr
 		}
 		allFields = append(allFields, goIDField)
 
-		goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef.Type, fieldCasing)
+		goRelatedField := getRelatedGoFieldForMorpheModel(relationshipName, targetModelName, relationDef, fieldCasing)
 		allFields = append(allFields, goRelatedField)
 	}
 	return allFields, nil
 }
 
-func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName string, relatedModelDef yaml.Model, relationType string, fieldCasing cfg.Casing) (godef.StructField, error) {
+func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName string, relatedModelDef yaml.Model, relationDef yaml.ModelRelation, fieldCasing cfg.Casing) (godef.StructField, error) {
 	relatedPrimaryIDFieldName, relatedIDFieldNameErr := yamlops.GetModelPrimaryIdentifierFieldName(relatedModelDef)
 	if relatedIDFieldNameErr != nil {
 		return godef.StructField{}, fmt.Errorf("related %w", relatedIDFieldNameErr)
@@ -302,7 +302,7 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName 
 
 	// Use relationship name for field naming (semantic), not target model name
 	idFieldName := fmt.Sprintf("%s%s", relationshipName, relatedPrimaryIDFieldName)
-	if yamlops.IsRelationMany(relationType) {
+	if yamlops.IsRelationMany(relationDef.Type) {
 		idFieldName += "s"
 	}
 
@@ -316,7 +316,7 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName 
 		return godef.StructField{}, ErrUnsupportedMorpheFieldType(relatedPrimaryIDFieldDef.Type)
 	}
 
-	if yamlops.IsRelationMany(relationType) {
+	if yamlops.IsRelationMany(relationDef.Type) {
 		return godef.StructField{
 			Name: idFieldName,
 			Type: godef.GoTypeArray{
@@ -327,19 +327,21 @@ func getRelatedGoFieldForMorpheModelPrimaryID(relationshipName, targetModelName 
 		}, nil
 	}
 
+	oneFieldType := godef.GoType(idFieldType)
+	if hasAttribute(relationDef.Attributes, "optional") {
+		oneFieldType = godef.GoTypePointer{ValueType: idFieldType}
+	}
 	return godef.StructField{
 		Name: idFieldName,
-		Type: godef.GoTypePointer{
-			ValueType: idFieldType,
-		},
+		Type: oneFieldType,
 		Tags: buildFieldTags(idFieldName, nil, fieldCasing),
 	}, nil
 }
 
-func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, relationType string, fieldCasing cfg.Casing) godef.StructField {
+func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, relationDef yaml.ModelRelation, fieldCasing cfg.Casing) godef.StructField {
 	// Use relationship name for field naming (semantic)
 	fieldName := relationshipName
-	if yamlops.IsRelationMany(relationType) {
+	if yamlops.IsRelationMany(relationDef.Type) {
 		fieldName = inflect.Plural(fieldName)
 	}
 
@@ -348,7 +350,7 @@ func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, r
 		Name: targetModelName,
 	}
 
-	if yamlops.IsRelationMany(relationType) {
+	if yamlops.IsRelationMany(relationDef.Type) {
 		return godef.StructField{
 			Name: fieldName,
 			Type: godef.GoTypeArray{
@@ -361,9 +363,7 @@ func getRelatedGoFieldForMorpheModel(relationshipName, targetModelName string, r
 
 	return godef.StructField{
 		Name: fieldName,
-		Type: godef.GoTypePointer{
-			ValueType: valueType,
-		},
+		Type: godef.GoTypePointer{ValueType: valueType},
 		Tags: buildFieldTags(fieldName, nil, fieldCasing),
 	}
 }

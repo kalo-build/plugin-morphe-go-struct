@@ -9,15 +9,15 @@ type Person struct {
 	ID                uint
 	LastName          string
 	Nationality       enums.Nationality
-	CompanyID         *uint
+	CompanyID         uint
 	Company           *Company
-	ContactInfoID     *uint
+	ContactInfoID     uint
 	ContactInfo       *ContactInfo
 	NoteIDs           []uint
 	Notes             []Comment
-	PersonalContactID *uint
+	PersonalContactID uint
 	PersonalContact   *Contact
-	WorkContactID     *uint
+	WorkContactID     uint
 	WorkContact       *Contact
 }
 

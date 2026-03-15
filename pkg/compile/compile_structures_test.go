@@ -599,3 +599,64 @@ func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_EnumField
 	suite.Equal(field1.Name, "String")
 	suite.Equal(field1.Type, godef.GoTypeString)
 }
+
+func (suite *CompileStructuresTestSuite) TestMorpheStructureToGoStruct_StructureComposition() {
+	structuresConfig := cfg.MorpheStructuresConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/structures",
+			Name: "structures",
+		},
+		ReceiverName: "s",
+	}
+	enumsConfig := cfg.MorpheEnumsConfig{
+		Package: godef.Package{
+			Path: "github.com/kalo-build/project/domain/enums",
+			Name: "enums",
+		},
+	}
+	config := compile.MorpheCompileConfig{
+		MorpheConfig: cfg.MorpheConfig{
+			MorpheStructuresConfig: structuresConfig,
+			MorpheEnumsConfig:      enumsConfig,
+		},
+		StructureHooks: hook.CompileMorpheStructure{},
+	}
+
+	lineItemStructure := yaml.Structure{
+		Name: "InvoiceLineItem",
+		Fields: map[string]yaml.StructureField{
+			"Amount": {Type: yaml.StructureFieldTypeInteger},
+		},
+	}
+	invoiceStructure := yaml.Structure{
+		Name: "Invoice",
+		Fields: map[string]yaml.StructureField{
+			"ID":        {Type: yaml.StructureFieldTypeString},
+			"LineItem": {Type: "InvoiceLineItem", Attributes: []string{"optional"}},
+		},
+	}
+
+	r := registry.NewRegistry()
+	r.SetStructure("InvoiceLineItem", lineItemStructure)
+	r.SetStructure("Invoice", invoiceStructure)
+
+	structureStruct, structErr := compile.MorpheStructureToGoStruct(config, r, invoiceStructure)
+
+	suite.Nil(structErr)
+	suite.NotNil(structureStruct)
+	suite.Equal(structureStruct.Name, "Invoice")
+
+	fields := structureStruct.Fields
+	suite.Len(fields, 2)
+
+	suite.Equal(fields[0].Name, "ID")
+	suite.Equal(fields[0].Type, godef.GoTypeString)
+
+	suite.Equal(fields[1].Name, "LineItem")
+	refType, ok := fields[1].Type.(godef.GoTypePointer)
+	suite.True(ok, "LineItem should be optional (pointer)")
+	innerType, ok := refType.ValueType.(godef.GoTypeStruct)
+	suite.True(ok, "LineItem value type should be GoTypeStruct")
+	suite.Equal(innerType.Name, "InvoiceLineItem")
+	suite.Equal(innerType.PackagePath, structuresConfig.Package.Path)
+}
